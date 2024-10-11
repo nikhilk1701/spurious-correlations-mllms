@@ -27,12 +27,12 @@ class CLIPDataloader(torch.utils.data.Dataset):
         self.transform = clip_transform
 
     def __len__(self):
-        return len(self.read_data['paths'])
+        return len(self.read_data)
 
     def __getitem__(self, idx):
-        name = self.read_data['names'][idx]
-        path = self.read_data['paths'][idx]
-        label = self.read_data['labels'][idx]
+        name = self.read_data[idx]['name']
+        path = self.read_data[idx]['path']
+        label = self.read_data[idx]['label']
         image = self.transform(Image.open(path))
 
         single_sample = {'name': name, 'image': image, 'label': label}
