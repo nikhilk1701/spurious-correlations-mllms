@@ -26,7 +26,7 @@ def load_model(model_type, text_classes):
     text_inputs = torch.cat([clip.tokenize(f"a photo of a {c}") for c in text_classes]).to(device)
     return model, preprocess, text_inputs, device
 
-def clip_inference(loaded_model, text_inputs, test_loader, device):
+def clip_inference(loaded_model, text_inputs, test_loader, device, binary=False):
     with torch.no_grad():
         img_name = []
         gt_labels = []
@@ -40,11 +40,16 @@ def clip_inference(loaded_model, text_inputs, test_loader, device):
             img = img.to(device)
 
             logits_per_image, logits_per_text = loaded_model(img, text_inputs)
-            probs = logits_per_image.softmax(dim=-1).detach().cpu().numpy()
+            if binary:
+                selected_logits = logits_per_image[:, 0].unsqueeze(1)  # Now shape: [32, 1] as in training
+                preds = torch.sigmoid(selected_logits).detach().cpu().numpy()
+                probs = (preds > 0.5).astype(int)
+            else:
+                probs = logits_per_image.softmax(dim=-1).detach().cpu().numpy()
 
-            img_name.append(name)
-            gt_labels.append(label)
-            scores.append(probs)
+            img_name.extend(name)
+            gt_labels.extend(label)
+            scores.extend(probs)
 
     return img_name, gt_labels, scores
 
@@ -53,8 +58,13 @@ def save_to_csv(model_type, dataset, save_path, img_name, gt_labels, scores):
     df.to_csv(f"{save_path}/CLIP_{model_type}_{dataset}_inference.csv", index= False)
     return
 
-def calculate_class_pred_accuracy_from_csv(text_class_order, gt_labels, scores):
-    class_predictions = [text_class_order[np.argmax(score)] for score in scores]
+def calculate_class_pred_accuracy(text_class_order, gt_labels, scores, binary=False):
+
+    if binary:
+        class_predictions = [text_class_order[int(score)] for score in scores]
+    else:
+        class_predictions = [text_class_order[np.argmax(score)] for score in scores]
+    
     # Calculate overall accuracy    
     correct_predictions = sum(pred == gt for pred, gt in zip(class_predictions, gt_labels))
     accuracy = correct_predictions / len(gt_labels)
@@ -72,7 +82,6 @@ def calculate_class_pred_accuracy_from_csv(text_class_order, gt_labels, scores):
 
     return accuracy, class_accuracy
 
-
 def main():
     text = ["waterbird", "landbird"]
     dataset = "waterbirds"
@@ -87,26 +96,8 @@ def main():
     loader = torch.utils.data.DataLoader(loaded_dataset, batch_size=32, shuffle=False)
     
     img_name, gt_labels, scores = clip_inference(model, text_inputs, loader, device)
-    img_arr = []
-    gt_label_arr = []
-    score_arr = []
-    for img_batch in img_name:
-        img_arr += img_batch
-    for gt_label_batch in gt_labels:
-        gt_label_arr += gt_label_batch
-    for score_batch in scores:
-        if len(score_arr) == 0:
-            score_arr = score_batch
-        else:
-            score_arr = np.concatenate([score_arr, score_batch])
-    save_to_csv(model_type, dataset, save_path, img_arr, gt_label_arr, score_arr)
-
-    csv_save_path = f"{save_path}/CLIP_{model_type}_{dataset}_inference.csv"
-    df = pd.read_csv(csv_save_path)
-    gt_labels = df['gt_labels'].tolist()
-    # gt_labels = [label for label in gt_labels]
-    scores = df['scores'].tolist()
-    accuracy, class_accuracy = calculate_class_pred_accuracy_from_csv(text, gt_label_arr, score_arr)
+    save_to_csv(model_type.split("/")[0], dataset, save_path, img_name, gt_labels, scores)
+    accuracy, class_accuracy = calculate_class_pred_accuracy(text, gt_labels, scores)
 
     print(f"Overall Accuracy: {accuracy}")
     for class_name, accuracy in class_accuracy.items():

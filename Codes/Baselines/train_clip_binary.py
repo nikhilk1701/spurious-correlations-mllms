@@ -1,5 +1,5 @@
-# Code to: Train CLIP
-# Date Created: 10/8/2024
+# Code to: Train CLIP on binary classification dataset like waterbirds
+# Date Created: 10/13/24
 # Last Modified By: Shika
 
 import os
@@ -26,10 +26,10 @@ from eval_clip import *
 import torch.nn.functional as F
 logging.getLogger('matplotlib').setLevel(logging.ERROR)
 
-class Train_CLIP(nn.Module):
+class Train_CLIP_Binary(nn.Module):
 
     def __init__(self, model_type, dataset, text_classes, img_dir, config):
-        super(Train_CLIP, self).__init__() 
+        super(Train_CLIP_Binary, self).__init__() 
 
         self.config = config
         self.dataset = dataset
@@ -164,7 +164,7 @@ class Train_CLIP(nn.Module):
         self.model.train()
         self.convert_models_to_fp32(self.model)
 
-        loss_img = nn.CrossEntropyLoss()
+        loss_img = nn.BCEWithLogitsLoss()
         loss_text = nn.CrossEntropyLoss()
 
         for iteration in tqdm(range(start_iteration, total_iterations + 1)):
@@ -179,46 +179,22 @@ class Train_CLIP(nn.Module):
 
             # In the CLIP paper, they have an n,n matrix of logits. That is because they have same number of image and text features. 
             # Thus they have an image-class mathcing loss and a text-class matching loss. 
-            # In our case, we have 32 image samples, but only 2 text samples. The follwing below can be scaled upto the number of text samples.
-            logits_per_image, logits_per_text = self.model(images, texts) # shape: [bs, num_text_classes]
+            # In our case, we have 32 image samples, but only 2 text samples.
+            # Since this is binary classification task, we modify it a little bit.
+            logits_per_image, logits_per_text = self.model(images, texts) # Shape [32,2]
+            selected_logits = logits_per_image[:, 0].unsqueeze(1)  # Now shape: [32, 1]
 
-            # So case1: Example:
-            # So for the image matching loss, I leave it as is 32,2 vector. And match to a 32 gt vector.
-            # For the text matching loss, we have a 2,32 vector. So I match it to a 2 dim gt vector.	
-            if self.config.mode == 'imbalanced_text':
-
-                # According to ordering in text classes, converting labels to index
-                class_to_index = {cls: idx for idx, cls in enumerate(self.text_classes)}
-                ground_truth_img = torch.tensor([class_to_index[label] for label in labels], device=self.device)
-                ground_truth_text = torch.tensor([class_to_index[label] for label in self.text_classes], device=self.device) 
-
-                loss_i = loss_img(logits_per_image, ground_truth_img.long())
-                loss_t = loss_text(logits_per_text, ground_truth_text.long())
-                loss = loss_i + self.config.alpha * loss_t
-
-            # So case2: Example
-            # So for the image matching loss, I have a 32,32 matrix of logits (expanded and repeated). And match to a 32 gt vector.
-            # For the text matching loss, we have a 32,32 matrix only here also. So I match it to a 32 dim gt vector.
-            elif self.config.mode == 'balanced_text':
-                logits_per_image = logits_per_image.repeat(1, self.config.batch_size//len(self.text_classes))
-                logits_per_text = logits_per_text.repeat(self.config.batch_size//len(self.text_classes), 1)
-
-                # According to ordering in text classes, converting labels to index
-                class_to_index = {cls: idx for idx, cls in enumerate(self.text_classes)}
-                ground_truth_img = torch.tensor([class_to_index[label] for label in labels], device=self.device)
-                ground_truth_text = torch.tensor([class_to_index[label] for label in self.text_classes], device=self.device).repeat(self.config.batch_size//len(self.text_classes))
-
-                loss_i = loss_img(logits_per_image, ground_truth_img.long())
-                loss_t = loss_text(logits_per_text, ground_truth_text.long())
-                loss = (loss_i + loss_t)/2
+            # getting gt for image side training and text side training
+            class_to_index = {cls: idx for idx, cls in enumerate(self.text_classes)}
+            ground_truth_img = torch.tensor([class_to_index[label] for label in labels], device=self.device).unsqueeze(1)
+            image_loss = loss_img(selected_logits, ground_truth_img.float())
             
-            # So case3:
-            # Only image matching loss
-            elif self.config.mode == 'only_image':
-                # According to ordering in text classes, converting labels to index
-                class_to_index = {cls: idx for idx, cls in enumerate(self.text_classes)}
-                ground_truth_img = torch.tensor([class_to_index[label] for label in labels], device=self.device) 
-                loss = loss_img(logits_per_image, ground_truth_img.long())
+            if self.config.mode == 'only_image':
+                loss = image_loss
+            elif self.config.mode == 'imbalanced_text':
+                ground_truth_text = torch.tensor([class_to_index[label] for label in labels], device=self.device)
+                text_loss = loss_text(logits_per_text, ground_truth_text.long())
+                loss = (image_loss + text_loss)/2
 
             self.optimizer.zero_grad()
             loss.backward()
@@ -253,13 +229,13 @@ class Train_CLIP(nn.Module):
     def test_during_train(self):
 
         self.test_dict['csv'] = {'Image_Name': [], 'GT': [], f'pred{self.current_iteration:04d}': []}
-        img_name, gt_labels, scores = clip_inference(self.model, self.tokenized_text_inputs, self.test_loader, self.device)
+        img_name, gt_labels, scores = clip_inference(self.model, self.tokenized_text_inputs, self.test_loader, self.device, binary = True)
         
         self.test_dict['csv'][f'pred{self.current_iteration:04}'] = scores
         self.test_dict['csv']['Image_Name'] = img_name
         self.test_dict['csv']['GT'] = gt_labels
 
-        accuracy, class_accuracy = calculate_class_pred_accuracy(self.text_classes, gt_labels, scores)
+        accuracy, class_accuracy = calculate_class_pred_accuracy(self.text_classes, gt_labels, scores, binary = True)
 
         self.test_dict['csv'][f'pred{self.current_iteration:04}'].append(accuracy)
         self.test_dict['csv']['Image_Name'].append('Accuracy')
@@ -327,8 +303,7 @@ def configuration_params():
     parser.add_argument('--results_dir', type=str, default='/scratch/sr7463/results/Train')
     parser.add_argument('--model_type', type=str, default='ViT-B/32', choices=['ViT-B/32', 'ViT-B/16', 'ViT-L/14', 'ViT-L/14@336px'])
     parser.add_argument('--optimizer', type=str, default='adam', choices=['adam', 'SGD'])
-    parser.add_argument('--alpha', type=float,  default=1.0)
-    parser.add_argument('--mode', type=str, default='balanced_text', choices=['balanced_text', 'imbalanced_text', 'only_image'])
+    parser.add_argument('--mode', type=str, default='only_image', choices=['imbalanced_text', 'only_image'])
 
     config = parser.parse_args()
     return config
@@ -336,7 +311,7 @@ def configuration_params():
 
 def main():
     config = configuration_params()
-    model = Train_CLIP(model_type=config.model_type, dataset='waterbirds', text_classes=['waterbird', 'landbird'], img_dir='/scratch/sr7463/datasets/', config=config)
+    model = Train_CLIP_Binary(model_type=config.model_type, dataset='waterbirds', text_classes=['waterbird', 'landbird'], img_dir='/scratch/sr7463/datasets/', config=config)
     model.train_model()
 
     return
