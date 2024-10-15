@@ -191,10 +191,6 @@ class Train_CLIP_Binary(nn.Module):
             
             if self.config.mode == 'only_image':
                 loss = image_loss
-            elif self.config.mode == 'imbalanced_text':
-                ground_truth_text = torch.tensor([class_to_index[label] for label in labels], device=self.device)
-                text_loss = loss_text(logits_per_text, ground_truth_text.long())
-                loss = (image_loss + text_loss)/2
 
             self.optimizer.zero_grad()
             loss.backward()
@@ -303,7 +299,7 @@ def configuration_params():
     parser.add_argument('--results_dir', type=str, default='/scratch/sr7463/results/Train')
     parser.add_argument('--model_type', type=str, default='ViT-B/32', choices=['ViT-B/32', 'ViT-B/16', 'ViT-L/14', 'ViT-L/14@336px'])
     parser.add_argument('--optimizer', type=str, default='adam', choices=['adam', 'SGD'])
-    parser.add_argument('--mode', type=str, default='only_image', choices=['imbalanced_text', 'only_image'])
+    parser.add_argument('--mode', type=str, default='only_image', choices=['only_image'])
 
     config = parser.parse_args()
     return config

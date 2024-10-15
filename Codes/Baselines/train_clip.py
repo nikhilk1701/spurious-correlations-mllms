@@ -177,44 +177,35 @@ class Train_CLIP(nn.Module):
             images = images.to(self.device)
             texts = self.tokenized_text_inputs.to(self.device)
 
-            # In the CLIP paper, they have an n,n matrix of logits. That is because they have same number of image and text features. 
-            # Thus they have an image-class mathcing loss and a text-class matching loss. 
-            # In our case, we have 32 image samples, but only 2 text samples. The follwing below can be scaled upto the number of text samples.
-            logits_per_image, logits_per_text = self.model(images, texts) # shape: [bs, num_text_classes]
-
-            # So case1: Example:
-            # So for the image matching loss, I leave it as is 32,2 vector. And match to a 32 gt vector.
-            # For the text matching loss, we have a 2,32 vector. So I match it to a 2 dim gt vector.	
-            if self.config.mode == 'imbalanced_text':
-
-                # According to ordering in text classes, converting labels to index
-                class_to_index = {cls: idx for idx, cls in enumerate(self.text_classes)}
-                ground_truth_img = torch.tensor([class_to_index[label] for label in labels], device=self.device)
-                ground_truth_text = torch.tensor([class_to_index[label] for label in self.text_classes], device=self.device) 
-
-                loss_i = loss_img(logits_per_image, ground_truth_img.long())
-                loss_t = loss_text(logits_per_text, ground_truth_text.long())
-                loss = loss_i + self.config.alpha * loss_t
-
-            # So case2: Example
+            # So case1: Example
             # So for the image matching loss, I have a 32,32 matrix of logits (expanded and repeated). And match to a 32 gt vector.
             # For the text matching loss, we have a 32,32 matrix only here also. So I match it to a 32 dim gt vector.
-            elif self.config.mode == 'balanced_text':
-                logits_per_image = logits_per_image.repeat(1, self.config.batch_size//len(self.text_classes))
-                logits_per_text = logits_per_text.repeat(self.config.batch_size//len(self.text_classes), 1)
-
+            if self.config.mode == 'balanced_text':
+                
+                # check ordering of images in labels. Arrange the 2 text labels in the same order.
+                # In our case, we have 32 image samples, but only 2 text samples. The follwing below can be scaled upto the number of text samples.
+                # if label is waterbird, select the first text label, if label is landbird, select the second text label.
                 # According to ordering in text classes, converting labels to index
                 class_to_index = {cls: idx for idx, cls in enumerate(self.text_classes)}
-                ground_truth_img = torch.tensor([class_to_index[label] for label in labels], device=self.device)
-                ground_truth_text = torch.tensor([class_to_index[label] for label in self.text_classes], device=self.device).repeat(self.config.batch_size//len(self.text_classes))
+                ground_truth_indices = torch.tensor([class_to_index[label] for label in labels], device=self.device)
+                text_inputs_per_image = texts[ground_truth_indices].to(self.device)
+                ground_truth_clip_paper = torch.arange(len(images),dtype=torch.long,device=self.device)
 
-                loss_i = loss_img(logits_per_image, ground_truth_img.long())
-                loss_t = loss_text(logits_per_text, ground_truth_text.long())
+                logits_per_image, logits_per_text = self.model(images, text_inputs_per_image) # shape: [bs, bs]
+
+                loss_i = loss_img(logits_per_image, ground_truth_clip_paper)
+                loss_t = loss_text(logits_per_text, ground_truth_clip_paper)
                 loss = (loss_i + loss_t)/2
             
-            # So case3:
+            # So case2:
             # Only image matching loss
             elif self.config.mode == 'only_image':
+                
+                # In the CLIP paper, they have an n,n matrix of logits. That is because they have same number of image and text features. 
+                # Thus they have an image-class mathcing loss and a text-class matching loss. 
+                # In our case, we have 32 image samples, but only 2 text samples. The follwing below can be scaled upto the number of text samples.
+                logits_per_image, logits_per_text = self.model(images, texts) # shape: [bs, num_text_classes]
+                
                 # According to ordering in text classes, converting labels to index
                 class_to_index = {cls: idx for idx, cls in enumerate(self.text_classes)}
                 ground_truth_img = torch.tensor([class_to_index[label] for label in labels], device=self.device) 
@@ -328,7 +319,7 @@ def configuration_params():
     parser.add_argument('--model_type', type=str, default='ViT-B/32', choices=['ViT-B/32', 'ViT-B/16', 'ViT-L/14', 'ViT-L/14@336px'])
     parser.add_argument('--optimizer', type=str, default='adam', choices=['adam', 'SGD'])
     parser.add_argument('--alpha', type=float,  default=1.0)
-    parser.add_argument('--mode', type=str, default='balanced_text', choices=['balanced_text', 'imbalanced_text', 'only_image'])
+    parser.add_argument('--mode', type=str, default='balanced_text', choices=['balanced_text','only_image'])
 
     config = parser.parse_args()
     return config
