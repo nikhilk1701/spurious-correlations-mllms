@@ -85,7 +85,17 @@ class Train_CLIP_Binary(nn.Module):
     def init_dataloaders(self):
         self.train_data, self.val_data, self.test_data = get_organized_dataset(self.img_dir, self.dataset, "all")
         
-        train_dataset = CLIPDataloader(clip_transform= self.preprocess, learning_data= self.train_data)
+        finetune_data = []
+        cnt = 0
+        for input in self.train_data:
+            if len(finetune_data) < 50 and input['label'] == "landbird":
+                finetune_data.append(input)
+        for input in self.train_data:
+            if len(finetune_data) < 100 and input['label'] == "waterbird":
+                finetune_data.append(input)
+        self.train_data = finetune_data
+        
+        train_dataset = CLIPDataloader(clip_transform= self.preprocess, learning_data= finetune_data)
         self.train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=self.config.batch_size, pin_memory=True, num_workers=self.config.num_gpu_workers, shuffle=True)
 
         val_dataset = CLIPDataloader(clip_transform= self.preprocess, learning_data= self.val_data)
@@ -154,7 +164,7 @@ class Train_CLIP_Binary(nn.Module):
 
         start_iteration = 1
         total_iterations = int((self.config.epochs * len(self.train_loader)))
-        test_iteration = int((self.config.test_epochs * len(self.train_loader)))
+        test_iteration = max(1,int((self.config.test_epochs * len(self.train_loader))))
 
         if self.config.resume_training == True:
             self.load_model(self.config.resume_model_path)
@@ -182,8 +192,8 @@ class Train_CLIP_Binary(nn.Module):
             # In our case, we have 32 image samples, but only 2 text samples.
             # Since this is binary classification task, we modify it a little bit.
             logits_per_image, logits_per_text = self.model(images, texts) # Shape [32,2]
+            # Question: why is the just the first column selected
             selected_logits = logits_per_image[:, 0].unsqueeze(1)  # Now shape: [32, 1]
-
             # getting gt for image side training and text side training
             class_to_index = {cls: idx for idx, cls in enumerate(self.text_classes)}
             ground_truth_img = torch.tensor([class_to_index[label] for label in labels], device=self.device).unsqueeze(1)
@@ -191,7 +201,6 @@ class Train_CLIP_Binary(nn.Module):
             
             if self.config.mode == 'only_image':
                 loss = image_loss
-
             self.optimizer.zero_grad()
             loss.backward()
             self.optimizer.step()
@@ -201,7 +210,7 @@ class Train_CLIP_Binary(nn.Module):
             self.logger.add_scalar(f'TrainLoss', loss_dict['loss'], loss_dict['iteration'])
 
             per_sample_loss = train_loss[-1] / self.config.batch_size
-            print(f'Iteration {iteration} done with per closs {per_sample_loss:0.4f}.')
+            print(f'Iteration {iteration} done with per sample loss {per_sample_loss:0.4f}.')
 
             if iteration % test_iteration == 0 or iteration == total_iterations:
                 self.test_dict['test_acc']['iter_no'].append(self.current_iteration)
@@ -288,6 +297,7 @@ class Train_CLIP_Binary(nn.Module):
     
 def configuration_params():
     parser = argparse.ArgumentParser()
+    results_dir =  os.getenv("SCRATCH") + '/results/Train'
 
     parser.add_argument('--batch_size', type=int, default=32)
     parser.add_argument('--epochs', type=int, default=2)
@@ -296,18 +306,18 @@ def configuration_params():
     parser.add_argument('--num_gpu_workers', type=int, default=1)
     parser.add_argument('--weight_decay', type=float, default=0.2)
     parser.add_argument('--resume_training', type=bool, default=False)
-    parser.add_argument('--results_dir', type=str, default='/scratch/sr7463/results/Train')
+    parser.add_argument('--results_dir', type=str, default=results_dir)
     parser.add_argument('--model_type', type=str, default='ViT-B/32', choices=['ViT-B/32', 'ViT-B/16', 'ViT-L/14', 'ViT-L/14@336px'])
     parser.add_argument('--optimizer', type=str, default='adam', choices=['adam', 'SGD'])
     parser.add_argument('--mode', type=str, default='only_image', choices=['only_image'])
-
     config = parser.parse_args()
     return config
 
 
 def main():
     config = configuration_params()
-    model = Train_CLIP_Binary(model_type=config.model_type, dataset='waterbirds', text_classes=['waterbird', 'landbird'], img_dir='/scratch/sr7463/datasets/', config=config)
+    img_dir = os.getenv("SCRATCH") + '/datasets'
+    model = Train_CLIP_Binary(model_type=config.model_type, dataset='waterbirds', text_classes=['waterbird', 'landbird'], img_dir=img_dir, config=config)
     model.train_model()
 
     return

@@ -43,8 +43,7 @@ class Train_CLIP(nn.Module):
         # self.model = torch.nn.DataParallel(self.model, device_ids=[0, 1])
 
         # Get text features
-        self.tokenized_text_inputs = torch.cat([clip.tokenize(f"a photo of a {c}") for c in text_classes]).to(self.device)
-
+        self.tokenized_text_inputs = torch.cat([clip.tokenize(f"a photo of a {c} in a {c[:-4]} background") for c in text_classes]).to(self.device)
         if self.config.optimizer == 'adam':
             self.optimizer = Adam(self.model.parameters(), weight_decay=self.config.weight_decay, betas=(0.9,0.98), eps=1e-6, lr=self.config.learning_rate)
 
@@ -154,8 +153,7 @@ class Train_CLIP(nn.Module):
 
         start_iteration = 1
         total_iterations = int((self.config.epochs * len(self.train_loader)))
-        test_iteration = int((self.config.test_epochs * len(self.train_loader)))
-
+        test_iteration = max(1, int((self.config.test_epochs * len(self.train_loader))))
         if self.config.resume_training == True:
             self.load_model(self.config.resume_model_path)
             start_iteration = self.current_iteration + 1
@@ -307,6 +305,8 @@ class Train_CLIP(nn.Module):
     
 def configuration_params():
     parser = argparse.ArgumentParser()
+    scratch_dir = os.getenv("SCRATCH")
+    results_dir = scratch_dir + '/results/Train'
 
     parser.add_argument('--batch_size', type=int, default=32)
     parser.add_argument('--epochs', type=int, default=2)
@@ -315,7 +315,7 @@ def configuration_params():
     parser.add_argument('--num_gpu_workers', type=int, default=1)
     parser.add_argument('--weight_decay', type=float, default=0.2)
     parser.add_argument('--resume_training', type=bool, default=False)
-    parser.add_argument('--results_dir', type=str, default='/scratch/sr7463/results/Train')
+    parser.add_argument('--results_dir', type=str, default=results_dir)
     parser.add_argument('--model_type', type=str, default='ViT-B/32', choices=['ViT-B/32', 'ViT-B/16', 'ViT-L/14', 'ViT-L/14@336px'])
     parser.add_argument('--optimizer', type=str, default='adam', choices=['adam', 'SGD'])
     parser.add_argument('--alpha', type=float,  default=1.0)
@@ -327,7 +327,9 @@ def configuration_params():
 
 def main():
     config = configuration_params()
-    model = Train_CLIP(model_type=config.model_type, dataset='waterbirds', text_classes=['waterbird', 'landbird'], img_dir='/scratch/sr7463/datasets/', config=config)
+    scratch_dir = os.getenv("SCRATCH")
+    img_dir = scratch_dir + '/datasets'
+    model = Train_CLIP(model_type=config.model_type, dataset='waterbirds', text_classes=['waterbird', 'landbird'], img_dir=img_dir, config=config)
     model.train_model()
 
     return
