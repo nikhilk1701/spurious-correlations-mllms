@@ -18,6 +18,8 @@ def get_organized_dataset(base_dataset_path, dataset_name, dataset_split):
         return test_samples
     elif dataset_split == 'all':
         return train_samples, val_samples, test_samples
+    elif dataset_split == 'all_combined':
+        return curr_list
 
 
 # Dataloader for CLIP
