@@ -1,3 +1,4 @@
 *.out
 *.tar.gz
 __pycache__
+*.idea

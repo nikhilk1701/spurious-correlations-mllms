@@ -1,0 +1,101 @@
+bird_class,bird,description
+waterbird,Duck, A common waterbird that feeds on aquatic plants and insects.
+waterbird,Pelican,Large bird with a distinctive pouch for catching fish.
+waterbird,Swan,Graceful bird known for its long neck and white feathers.
+waterbird,Heron,"Tall bird that wades in shallow water, hunting for fish."
+waterbird,Cormorant,A black seabird that dives underwater to catch fish.
+waterbird,Flamingo,Pink wading bird with long legs and a downward-bending bill.
+waterbird,Egret,"Slender, white bird found in wetlands, often stalking prey."
+waterbird,Grebe,A diving bird that uses its strong legs to hunt underwater.
+waterbird,Ibis,"Long-legged bird with a curved beak, often seen in marshes."
+waterbird,Albatross,Large seabird known for its vast wingspan and oceanic travels.
+waterbird,Gull,Common coastal bird that feeds on fish and human leftovers.
+waterbird,Tern,Small seabird with a streamlined body and forked tail.
+waterbird,Kingfisher,Brightly colored bird that dives for fish in rivers.
+waterbird,Loon,A large diving bird known for its eerie calls and excellent swimming ability.
+waterbird,Stork,"Tall bird with long legs, often seen in wetlands and known for its nesting behavior."
+waterbird,Puffin,"Small, stocky seabird with colorful beak, found in cold coastal waters."
+waterbird,Oystercatcher,"Shorebird with a bright orange beak, used for prying open shellfish."
+waterbird,Avocet,Wading bird with long legs and an upturned bill for sweeping in the water.
+waterbird,Bittern,A secretive heron-like bird that blends well in reed beds.
+waterbird,Spoonbill,"Large bird with a spoon-shaped bill, used to sift through water for food."
+waterbird,Coot,"A black waterbird with a white beak, commonly seen in ponds and lakes."
+waterbird,Crane,"Large, long-legged bird that frequents wetlands and grasslands."
+waterbird,Sandpiper,Small shorebird that feeds on invertebrates along beaches and mudflats.
+waterbird,Whimbrel,Large shorebird with a down-curved beak for probing mud.
+waterbird,Curlew,"Wading bird with a long, curved beak and distinctive call."
+waterbird,Frigatebird,"Seabird with long wings and a forked tail, known for stealing food from others."
+waterbird,Razorbill,A black-and-white seabird that nests on cliffs and feeds at sea.
+waterbird,Sooty Shearwater,A dark seabird that glides over waves in search of fish.
+waterbird,Petrel,Small seabird that hovers over the ocean surface while feeding.
+waterbird,Booby,Seabird known for its clumsy landings and diving skills.
+waterbird,Gannet,Large seabird that plunges into the ocean at high speeds to catch fish.
+waterbird,Plover,Small shorebird often seen running along beaches and tidal flats.
+waterbird,Godwit,"Long-billed wading bird, known for its epic migrations."
+waterbird,Jacana,"Tropical bird with large feet and toes, allowing it to walk on floating vegetation."
+waterbird,Shoveler,"A duck with a wide, spoon-shaped bill for filtering food from water."
+waterbird,Wigeon,A species of dabbling duck that feeds on aquatic plants.
+waterbird,Teal,A small duck known for its fast flight and vibrant plumage.
+waterbird,Moorhen,"A medium-sized waterbird, often seen swimming in ponds and wetlands."
+waterbird,Garganey,"A small, migratory duck that breeds in marshes and wetlands."
+waterbird,Scaup,A diving duck known for its rounded head and preference for freshwater lakes.
+waterbird,Eider,A large sea duck known for its soft down feathers used in insulation.
+waterbird,Mallard,"One of the most common ducks, easily recognizable by its green head."
+waterbird,Red-breasted Merganser,"A diving duck with a slender, serrated bill for catching fish."
+waterbird,Smew,A small duck with striking black-and-white plumage.
+waterbird,Canvasback,A large diving duck with a distinctive sloping forehead.
+waterbird,Pied-billed Grebe,"A small diving bird found in freshwater habitats, with a stout bill."
+waterbird,Clapper Rail,"A secretive marsh bird with a loud call, known for its preference for saltwater marshes."
+waterbird,Harlequin Duck,"A striking, colorful sea duck often found in fast-moving rivers and coastal areas."
+waterbird,Wood Duck,A colorful waterbird often found in wooded swamps and ponds.
+waterbird,Common Goldeneye,"A diving duck with bright yellow eyes, often seen in northern lakes."
+landbird,Sparrow,"Small, plump bird often found in urban and rural areas."
+landbird,Eagle,A powerful bird of prey known for its sharp vision and talons.
+landbird,Robin,A small bird with a distinctive orange-red breast.
+landbird,Crow,"A highly intelligent bird, often associated with scavenging."
+landbird,Owl,A nocturnal bird of prey known for its distinct hoot.
+landbird,Hawk,"A bird of prey with keen eyesight, often seen soaring high in the sky."
+landbird,Woodpecker,Bird known for pecking at trees to find insects or make nests.
+landbird,Magpie,"A bird with striking black and white plumage, known for its intelligence."
+landbird,Blue Jay,"Bright blue bird with a loud call, commonly found in North America."
+landbird,Cardinal,A vibrant red bird often seen in gardens and woodlands.
+landbird,Blackbird,A common bird with black plumage and a distinctive song.
+landbird,Finch,"A small bird with a conical beak, known for its colorful plumage."
+landbird,Starling,A medium-sized bird known for its glossy feathers and mimicry.
+landbird,Pigeon,"A familiar bird in urban areas, often found near humans."
+landbird,Dove,"A small bird related to pigeons, known for its soft cooing call."
+landbird,Mockingbird,A bird known for imitating the songs of other birds.
+landbird,Swallow,"A small, agile bird with long wings, often seen swooping over fields."
+landbird,Warbler,"A small, often brightly colored bird, known for its complex songs."
+landbird,Thrush,"A bird with spotted plumage, known for its melodic song."
+landbird,Lark,"A small bird often found in open fields, famous for its beautiful song."
+landbird,Nightingale,A small bird renowned for its powerful and melodic singing.
+landbird,Kestrel,A small bird of prey that hovers while hunting for small mammals and insects.
+landbird,Swift,A fast-flying bird that spends most of its life on the wing.
+landbird,Kingfisher,Brightly colored bird known for diving into water to catch fish.
+landbird,Nuthatch,A small bird that can climb down trees headfirst while searching for insects.
+landbird,Wren,"A tiny bird with a loud voice, often found in bushes and woodlands."
+landbird,Titmouse,"A small bird with a crested head, commonly found in forests."
+landbird,Canary,"A small yellow bird, often kept as a pet for its pleasant song."
+landbird,Parrot,A colorful bird known for its intelligence and ability to mimic sounds.
+landbird,Falcon,"A fast bird of prey, known for its swift hunting dives."
+landbird,Buzzard,A large bird of prey that soars in search of carrion and small animals.
+landbird,Vulture,"A scavenger bird with a bald head, often found in arid regions."
+landbird,Barn Owl,"A pale, ghostly owl often seen flying silently at dusk."
+landbird,Woodcock,"A woodland bird with a long beak, known for its camouflaged plumage."
+landbird,Jay,"A colorful bird with blue and white plumage, known for its loud calls."
+landbird,Chickadee,"A small, friendly bird that often visits backyard feeders."
+landbird,Bullfinch,"A stocky finch with a bright pink chest, commonly seen in winter."
+landbird,Rook,"A large, black bird that often gathers in large flocks."
+landbird,Goldfinch,"A small bird with bright yellow plumage, often seen at feeders."
+landbird,Pheasant,"A colorful game bird with a long tail, often found in farmland."
+landbird,Quail,"A small ground-dwelling bird, often found in grassy areas."
+landbird,Raven,"A large, black bird known for its intelligence and mythological significance."
+landbird,Siskin,"A small finch with yellow-green plumage, often seen in coniferous forests."
+landbird,Lapwing,A ground-nesting bird with distinctive crest and flight pattern.
+landbird,Starling,A common bird with iridescent feathers and strong flocking behavior.
+landbird,Treecreeper,A small bird that spirals up trees in search of insects.
+landbird,Grosbeak,"A large, seed-eating bird with a thick bill, often brightly colored."
+landbird,Kite,A graceful bird of prey known for its long wings and forked tail.
+landbird,Chough,A crow-like bird with red legs and a curved red bill.
+landbird,Shrike,A predatory songbird known for impaling its prey on thorns.
