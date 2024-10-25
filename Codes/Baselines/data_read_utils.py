@@ -6,6 +6,8 @@
 from pathlib import Path
 import pandas as pd
 import os
+import torch
+import clip
 
 def get_dataset_list(base_dataset_path: Path, dataset: str):
     datasets = []
@@ -71,3 +73,33 @@ def get_dataset_list(base_dataset_path: Path, dataset: str):
         print("Count of images in test where label (land/water) and place (land/water) match: ", label_place_match_count_test)
         print("Count of images in val where label (land/water) and place (land/water) match: ", label_place_match_count_val)
     return datasets
+
+
+def get_text_data (base_dataset_path: Path, dataset: str):
+    # Load the CSV file
+    data = base_dataset_path / f"{dataset}"
+    data = pd.read_csv(data)
+
+    # Extract unique bird classes and their descriptions
+    bird_classes = data['bird_class'].unique()
+    descriptions = {row['bird_class']: row['description'] for _, row in data.iterrows()}
+
+    # Create tokenized text inputs
+    tokenized_text_inputs = torch.cat([clip.tokenize(f"a photo of a {c}") for c in bird_classes])#.to(self.device)
+
+    return tokenized_text_inputs, descriptions
+
+if __name__ == "__main__":
+    base_dataset_path = Path('D:/Downloads/Academics/Learning From Small Data/spurious-correlations-mllms')
+    dataset           = 'dummy_class_data.csv'
+
+    try:
+        tokenized_text_inputs, descriptions = get_text_data(base_dataset_path, dataset)
+        print("Tokenized Text Inputs:")
+        print(tokenized_text_inputs)
+        print("\nDescriptions:")
+        for bird_class, description in descriptions.items():
+            print(f"{bird_class}: {description}")
+    except Exception as e:
+        print(f"An error occurred: {e}")
+
