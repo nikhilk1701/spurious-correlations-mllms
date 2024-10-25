@@ -5,6 +5,13 @@ from dataloader import *
 
 image_dir = "/scratch/nk3853/datasets/Waterbirds"
 
+"""
+    generates prompts for llava to generate the auxillary text
+    currently limits to 10 images of each kind [waterbird, landbird] X [landbackground, waterbackground] for easy testing
+
+    run using
+        ''echo > questions.jsonl; python waterbird_questions.py''
+"""
 def generate_questions():
     text = ["waterbird", "landbird"]
     dataset_name = "waterbirds"
@@ -15,21 +22,46 @@ def generate_questions():
 
     questions = []
     question_id = 1
+    wblb = 0
+    wbwb = 0
+    lblb = 0
+    lbwb = 0
     for datapoint in dataset:
         question = {}
-        # print(datapoint)
         question["question_id"] = question_id
         image_class = datapoint['label']
         background = datapoint['place']
-        # question["text"] = f"Describe the {image_class} in the image, ignore the {background}. Include what visual features it has common with other birds of the same class. Be concise."
-        question["text"] = f"I think that this is a landbird. If I am wrong, tell me why."
-        question["image"] = datapoint["name"]
-        questions.append(question)
 
-        question_id += 1
+        if image_class == "waterbird" and background == "land" and wblb < 10:
+            question["text"] = f"Describe the {image_class} in the image, ignore the {background}. Include what visual features it has common with other birds of the same class. Be concise."
+            # question["text"] = f"I think that this is a landbird. If I am wrong, tell me why."
+            question["image"] = datapoint["name"]
+            questions.append(question)
+            wblb += 1
+            question_id += 1
 
+        if image_class == "waterbird" and background == "water" and wbwb < 10:
+            question["text"] = f"Describe the {image_class} in the image, ignore the {background}. Include what visual features it has common with other birds of the same class. Be concise."
+            question["image"] = datapoint["name"]
+            questions.append(question)
+            wbwb += 1
+            question_id += 1
+        
+        if image_class == "landbird" and background == "land" and lblb < 10:
+            question["text"] = f"Describe the {image_class} in the image, ignore the {background}. Include what visual features it has common with other birds of the same class. Be concise."
+            question["image"] = datapoint["name"]
+            questions.append(question)
+            lblb += 1
+            question_id += 1
+        
+        if image_class == "landbird" and background == "water" and lbwb < 10:
+            question["text"] = f"Describe the {image_class} in the image, ignore the {background}. Include what visual features it has common with other birds of the same class. Be concise."
+            question["image"] = datapoint["name"]
+            questions.append(question)
+            lbwb += 1
+            question_id += 1
 
-    print(questions)
+    # print(questions)
 
     with open('questions.jsonl', 'a') as questions_file:
         for question in questions:
