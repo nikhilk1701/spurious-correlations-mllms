@@ -52,7 +52,11 @@ class SupervisedContrastiveLoss(nn.Module):
         logits = anchor_dot_contrast - logits_max.detach()
 
         # mask-out self-contrast cases
-        logits_mask = torch.scatter(torch.ones_like(mask),1,torch.arange(batch_size).view(-1, 1).to(device),0)
+        if self.contrast_mode == 'one':
+            logits_mask = torch.ones_like(mask)
+            logits_mask[0, 0] = 0
+        elif self.contrast_mode == 'all':
+            logits_mask = torch.scatter(torch.ones_like(mask),1,torch.arange(batch_size).view(-1, 1).to(device),0)
         mask = mask * logits_mask 
 
         # compute log_prob
@@ -99,7 +103,7 @@ class BatchedSupervisedContrastiveLoss(nn.Module):
 
         # compute logits
         if self.contrast_mode == 'one':
-            anchor_feature = features[:, 0, :].unsqueeze(0) # taking the first feature vector as anchor [16, 1, 1024]
+            anchor_feature = features[:, 0, :].unsqueeze(1) # taking the first feature vector as anchor [16, 1, 1024]
             mask = mask[:, 0, :].unsqueeze(0) # taking the first mask [16, 1, 17]
         elif self.contrast_mode == 'all':
             anchor_feature = features
@@ -111,8 +115,12 @@ class BatchedSupervisedContrastiveLoss(nn.Module):
         logits = anchor_dot_contrast - logits_max.detach() # [16, 17, 17]
 
         # mask-out self-contrast cases
-        logits_mask = torch.scatter(torch.ones_like(mask),1,torch.arange(num_features).view(-1, 1).to(device),0) # [17, 17]
-        logits_mask = logits_mask.unsqueeze(0).repeat(batch_size, 1, 1) # [16, 17, 17]
+        if self.contrast_mode == 'one':
+            logits_mask = torch.ones_like(mask)
+            logits_mask[:, 0, 0] = 0
+        elif self.contrast_mode == 'all':
+            logits_mask = torch.scatter(torch.ones_like(mask[0]),1,torch.arange(num_features).view(-1, 1).to(device),0) # [17, 17]
+            logits_mask = logits_mask.unsqueeze(0).repeat(batch_size, 1, 1) # [16, 17, 17]
         mask = mask * logits_mask # [16, 17, 17]
 
          # compute log_prob
@@ -147,7 +155,7 @@ def similarity_loss(features_1, features_2, labels_1, labels_2, pos_weight, neg_
     loss = sim_fun(features_1.unsqueeze(1), features_2.unsqueeze(0))
 
     pos_mask = (labels_1.unsqueeze(1).expand(-1, len(labels_2))-labels_2.unsqueeze(0).expand(len(labels_1),-1)) == 0
-    pos_mask = pos_mask.float().cuda()
+    pos_mask = pos_mask.float()
 
     pos_loss = (loss * pos_mask).mean(dim=-1)
     neg_loss = (loss * (1- pos_mask)).mean(dim=-1)
@@ -158,11 +166,15 @@ def similarity_loss(features_1, features_2, labels_1, labels_2, pos_weight, neg_
         return (pos_loss, neg_loss)
     else:
         return - pos_weight * pos_loss + neg_weight * neg_loss
-
     
 #################################################
 # TESTING OUR LOSSES 
 #################################################
+    
+# Note: When using such dummy data, the losses are all giving nans. Tried the loss from:
+# 1. https://github.com/HobbitLong/SupContrast/blob/master/losses.py
+# 2. https://github.com/GuillaumeErhard/Supervised_contrastive_loss_pytorch/blob/main/loss/spc.py
+# as is. But still getting nans with both. So need to check this. 
     
 def test_supcon_loss():
     loss1 = SupervisedContrastiveLoss(contrast_mode= 'all')
