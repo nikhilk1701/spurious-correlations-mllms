@@ -1,0 +1,702 @@
+[
+    {
+        "name": "004.Groove_billed_Ani/Groove_Billed_Ani_0071_1559.jpg",
+        "path": "/scratch/nk3853/datasets/Waterbirds/004.Groove_billed_Ani/Groove_Billed_Ani_0071_1559.jpg",
+        "label": "landbird",
+        "split": "train",
+        "place": "land"
+    },
+    {
+        "name": "004.Groove_billed_Ani/Groove_Billed_Ani_0105_1562.jpg",
+        "path": "/scratch/nk3853/datasets/Waterbirds/004.Groove_billed_Ani/Groove_Billed_Ani_0105_1562.jpg",
+        "label": "landbird",
+        "split": "train",
+        "place": "land"
+    },
+    {
+        "name": "004.Groove_billed_Ani/Groove_Billed_Ani_0090_1567.jpg",
+        "path": "/scratch/nk3853/datasets/Waterbirds/004.Groove_billed_Ani/Groove_Billed_Ani_0090_1567.jpg",
+        "label": "landbird",
+        "split": "train",
+        "place": "land"
+    },
+    {
+        "name": "004.Groove_billed_Ani/Groove_Billed_Ani_0019_1585.jpg",
+        "path": "/scratch/nk3853/datasets/Waterbirds/004.Groove_billed_Ani/Groove_Billed_Ani_0019_1585.jpg",
+        "label": "landbird",
+        "split": "train",
+        "place": "land"
+    },
+    {
+        "name": "004.Groove_billed_Ani/Groove_Billed_Ani_0036_1604.jpg",
+        "path": "/scratch/nk3853/datasets/Waterbirds/004.Groove_billed_Ani/Groove_Billed_Ani_0036_1604.jpg",
+        "label": "landbird",
+        "split": "train",
+        "place": "land"
+    },
+    {
+        "name": "004.Groove_billed_Ani/Groove_Billed_Ani_0007_1615.jpg",
+        "path": "/scratch/nk3853/datasets/Waterbirds/004.Groove_billed_Ani/Groove_Billed_Ani_0007_1615.jpg",
+        "label": "landbird",
+        "split": "train",
+        "place": "land"
+    },
+    {
+        "name": "004.Groove_billed_Ani/Groove_Billed_Ani_0051_1650.jpg",
+        "path": "/scratch/nk3853/datasets/Waterbirds/004.Groove_billed_Ani/Groove_Billed_Ani_0051_1650.jpg",
+        "label": "landbird",
+        "split": "train",
+        "place": "land"
+    },
+    {
+        "name": "004.Groove_billed_Ani/Groove_Billed_Ani_0015_1653.jpg",
+        "path": "/scratch/nk3853/datasets/Waterbirds/004.Groove_billed_Ani/Groove_Billed_Ani_0015_1653.jpg",
+        "label": "landbird",
+        "split": "train",
+        "place": "land"
+    },
+    {
+        "name": "004.Groove_billed_Ani/Groove_Billed_Ani_0076_1661.jpg",
+        "path": "/scratch/nk3853/datasets/Waterbirds/004.Groove_billed_Ani/Groove_Billed_Ani_0076_1661.jpg",
+        "label": "landbird",
+        "split": "train",
+        "place": "land"
+    },
+    {
+        "name": "004.Groove_billed_Ani/Groove_Billed_Ani_0002_1670.jpg",
+        "path": "/scratch/nk3853/datasets/Waterbirds/004.Groove_billed_Ani/Groove_Billed_Ani_0002_1670.jpg",
+        "label": "landbird",
+        "split": "train",
+        "place": "land"
+    },
+    {
+        "name": "004.Groove_billed_Ani/Groove_Billed_Ani_0047_1706.jpg",
+        "path": "/scratch/nk3853/datasets/Waterbirds/004.Groove_billed_Ani/Groove_Billed_Ani_0047_1706.jpg",
+        "label": "landbird",
+        "split": "train",
+        "place": "land"
+    },
+    {
+        "name": "004.Groove_billed_Ani/Groove_Billed_Ani_0077_1724.jpg",
+        "path": "/scratch/nk3853/datasets/Waterbirds/004.Groove_billed_Ani/Groove_Billed_Ani_0077_1724.jpg",
+        "label": "landbird",
+        "split": "train",
+        "place": "land"
+    },
+    {
+        "name": "004.Groove_billed_Ani/Groove_Billed_Ani_0023_1485.jpg",
+        "path": "/scratch/nk3853/datasets/Waterbirds/004.Groove_billed_Ani/Groove_Billed_Ani_0023_1485.jpg",
+        "label": "landbird",
+        "split": "train",
+        "place": "land"
+    },
+    {
+        "name": "004.Groove_billed_Ani/Groove_Billed_Ani_0004_1528.jpg",
+        "path": "/scratch/nk3853/datasets/Waterbirds/004.Groove_billed_Ani/Groove_Billed_Ani_0004_1528.jpg",
+        "label": "landbird",
+        "split": "train",
+        "place": "land"
+    },
+    {
+        "name": "004.Groove_billed_Ani/Groove_Billed_Ani_0056_1493.jpg",
+        "path": "/scratch/nk3853/datasets/Waterbirds/004.Groove_billed_Ani/Groove_Billed_Ani_0056_1493.jpg",
+        "label": "landbird",
+        "split": "train",
+        "place": "land"
+    },
+    {
+        "name": "004.Groove_billed_Ani/Groove_Billed_Ani_0058_1751.jpg",
+        "path": "/scratch/nk3853/datasets/Waterbirds/004.Groove_billed_Ani/Groove_Billed_Ani_0058_1751.jpg",
+        "label": "landbird",
+        "split": "train",
+        "place": "land"
+    },
+    {
+        "name": "004.Groove_billed_Ani/Groove_Billed_Ani_0027_1754.jpg",
+        "path": "/scratch/nk3853/datasets/Waterbirds/004.Groove_billed_Ani/Groove_Billed_Ani_0027_1754.jpg",
+        "label": "landbird",
+        "split": "train",
+        "place": "land"
+    },
+    {
+        "name": "004.Groove_billed_Ani/Groove_Billed_Ani_0055_1501.jpg",
+        "path": "/scratch/nk3853/datasets/Waterbirds/004.Groove_billed_Ani/Groove_Billed_Ani_0055_1501.jpg",
+        "label": "landbird",
+        "split": "train",
+        "place": "land"
+    },
+    {
+        "name": "004.Groove_billed_Ani/Groove_Billed_Ani_0065_1502.jpg",
+        "path": "/scratch/nk3853/datasets/Waterbirds/004.Groove_billed_Ani/Groove_Billed_Ani_0065_1502.jpg",
+        "label": "landbird",
+        "split": "train",
+        "place": "land"
+    },
+    {
+        "name": "004.Groove_billed_Ani/Groove_Billed_Ani_0006_1763.jpg",
+        "path": "/scratch/nk3853/datasets/Waterbirds/004.Groove_billed_Ani/Groove_Billed_Ani_0006_1763.jpg",
+        "label": "landbird",
+        "split": "train",
+        "place": "land"
+    },
+    {
+        "name": "004.Groove_billed_Ani/Groove_Billed_Ani_0061_1510.jpg",
+        "path": "/scratch/nk3853/datasets/Waterbirds/004.Groove_billed_Ani/Groove_Billed_Ani_0061_1510.jpg",
+        "label": "landbird",
+        "split": "train",
+        "place": "land"
+    },
+    {
+        "name": "004.Groove_billed_Ani/Groove_Billed_Ani_0032_1776.jpg",
+        "path": "/scratch/nk3853/datasets/Waterbirds/004.Groove_billed_Ani/Groove_Billed_Ani_0032_1776.jpg",
+        "label": "landbird",
+        "split": "train",
+        "place": "land"
+    },
+    {
+        "name": "004.Groove_billed_Ani/Groove_Billed_Ani_0012_1784.jpg",
+        "path": "/scratch/nk3853/datasets/Waterbirds/004.Groove_billed_Ani/Groove_Billed_Ani_0012_1784.jpg",
+        "label": "landbird",
+        "split": "train",
+        "place": "water"
+    },
+    {
+        "name": "009.Brewer_Blackbird/Brewer_Blackbird_0139_2567.jpg",
+        "path": "/scratch/nk3853/datasets/Waterbirds/009.Brewer_Blackbird/Brewer_Blackbird_0139_2567.jpg",
+        "label": "landbird",
+        "split": "train",
+        "place": "land"
+    },
+    {
+        "name": "009.Brewer_Blackbird/Brewer_Blackbird_0140_2586.jpg",
+        "path": "/scratch/nk3853/datasets/Waterbirds/009.Brewer_Blackbird/Brewer_Blackbird_0140_2586.jpg",
+        "label": "landbird",
+        "split": "train",
+        "place": "land"
+    },
+    {
+        "name": "009.Brewer_Blackbird/Brewer_Blackbird_0135_2607.jpg",
+        "path": "/scratch/nk3853/datasets/Waterbirds/009.Brewer_Blackbird/Brewer_Blackbird_0135_2607.jpg",
+        "label": "landbird",
+        "split": "train",
+        "place": "land"
+    },
+    {
+        "name": "009.Brewer_Blackbird/Brewer_Blackbird_0095_2610.jpg",
+        "path": "/scratch/nk3853/datasets/Waterbirds/009.Brewer_Blackbird/Brewer_Blackbird_0095_2610.jpg",
+        "label": "landbird",
+        "split": "train",
+        "place": "land"
+    },
+    {
+        "name": "009.Brewer_Blackbird/Brewer_Blackbird_0035_2611.jpg",
+        "path": "/scratch/nk3853/datasets/Waterbirds/009.Brewer_Blackbird/Brewer_Blackbird_0035_2611.jpg",
+        "label": "landbird",
+        "split": "train",
+        "place": "land"
+    },
+    {
+        "name": "009.Brewer_Blackbird/Brewer_Blackbird_0111_2613.jpg",
+        "path": "/scratch/nk3853/datasets/Waterbirds/009.Brewer_Blackbird/Brewer_Blackbird_0111_2613.jpg",
+        "label": "landbird",
+        "split": "train",
+        "place": "land"
+    },
+    {
+        "name": "009.Brewer_Blackbird/Brewer_Blackbird_0026_2625.jpg",
+        "path": "/scratch/nk3853/datasets/Waterbirds/009.Brewer_Blackbird/Brewer_Blackbird_0026_2625.jpg",
+        "label": "landbird",
+        "split": "train",
+        "place": "land"
+    },
+    {
+        "name": "009.Brewer_Blackbird/Brewer_Blackbird_0142_2636.jpg",
+        "path": "/scratch/nk3853/datasets/Waterbirds/009.Brewer_Blackbird/Brewer_Blackbird_0142_2636.jpg",
+        "label": "landbird",
+        "split": "train",
+        "place": "land"
+    },
+    {
+        "name": "009.Brewer_Blackbird/Brewer_Blackbird_0078_2659.jpg",
+        "path": "/scratch/nk3853/datasets/Waterbirds/009.Brewer_Blackbird/Brewer_Blackbird_0078_2659.jpg",
+        "label": "landbird",
+        "split": "train",
+        "place": "land"
+    },
+    {
+        "name": "009.Brewer_Blackbird/Brewer_Blackbird_0014_2679.jpg",
+        "path": "/scratch/nk3853/datasets/Waterbirds/009.Brewer_Blackbird/Brewer_Blackbird_0014_2679.jpg",
+        "label": "landbird",
+        "split": "train",
+        "place": "land"
+    },
+    {
+        "name": "009.Brewer_Blackbird/Brewer_Blackbird_0032_2214.jpg",
+        "path": "/scratch/nk3853/datasets/Waterbirds/009.Brewer_Blackbird/Brewer_Blackbird_0032_2214.jpg",
+        "label": "landbird",
+        "split": "train",
+        "place": "land"
+    },
+    {
+        "name": "009.Brewer_Blackbird/Brewer_Blackbird_0018_2261.jpg",
+        "path": "/scratch/nk3853/datasets/Waterbirds/009.Brewer_Blackbird/Brewer_Blackbird_0018_2261.jpg",
+        "label": "landbird",
+        "split": "train",
+        "place": "land"
+    },
+    {
+        "name": "009.Brewer_Blackbird/Brewer_Blackbird_0030_2268.jpg",
+        "path": "/scratch/nk3853/datasets/Waterbirds/009.Brewer_Blackbird/Brewer_Blackbird_0030_2268.jpg",
+        "label": "landbird",
+        "split": "train",
+        "place": "land"
+    },
+    {
+        "name": "009.Brewer_Blackbird/Brewer_Blackbird_0103_2273.jpg",
+        "path": "/scratch/nk3853/datasets/Waterbirds/009.Brewer_Blackbird/Brewer_Blackbird_0103_2273.jpg",
+        "label": "landbird",
+        "split": "train",
+        "place": "land"
+    },
+    {
+        "name": "009.Brewer_Blackbird/Brewer_Blackbird_0074_2277.jpg",
+        "path": "/scratch/nk3853/datasets/Waterbirds/009.Brewer_Blackbird/Brewer_Blackbird_0074_2277.jpg",
+        "label": "landbird",
+        "split": "train",
+        "place": "land"
+    },
+    {
+        "name": "009.Brewer_Blackbird/Brewer_Blackbird_0002_2278.jpg",
+        "path": "/scratch/nk3853/datasets/Waterbirds/009.Brewer_Blackbird/Brewer_Blackbird_0002_2278.jpg",
+        "label": "landbird",
+        "split": "train",
+        "place": "land"
+    },
+    {
+        "name": "009.Brewer_Blackbird/Brewer_Blackbird_0115_2279.jpg",
+        "path": "/scratch/nk3853/datasets/Waterbirds/009.Brewer_Blackbird/Brewer_Blackbird_0115_2279.jpg",
+        "label": "landbird",
+        "split": "train",
+        "place": "land"
+    },
+    {
+        "name": "009.Brewer_Blackbird/Brewer_Blackbird_0131_2289.jpg",
+        "path": "/scratch/nk3853/datasets/Waterbirds/009.Brewer_Blackbird/Brewer_Blackbird_0131_2289.jpg",
+        "label": "landbird",
+        "split": "train",
+        "place": "land"
+    },
+    {
+        "name": "009.Brewer_Blackbird/Brewer_Blackbird_0064_2290.jpg",
+        "path": "/scratch/nk3853/datasets/Waterbirds/009.Brewer_Blackbird/Brewer_Blackbird_0064_2290.jpg",
+        "label": "landbird",
+        "split": "train",
+        "place": "land"
+    },
+    {
+        "name": "009.Brewer_Blackbird/Brewer_Blackbird_0045_2303.jpg",
+        "path": "/scratch/nk3853/datasets/Waterbirds/009.Brewer_Blackbird/Brewer_Blackbird_0045_2303.jpg",
+        "label": "landbird",
+        "split": "train",
+        "place": "land"
+    },
+    {
+        "name": "009.Brewer_Blackbird/Brewer_Blackbird_0097_2322.jpg",
+        "path": "/scratch/nk3853/datasets/Waterbirds/009.Brewer_Blackbird/Brewer_Blackbird_0097_2322.jpg",
+        "label": "landbird",
+        "split": "train",
+        "place": "water"
+    },
+    {
+        "name": "009.Brewer_Blackbird/Brewer_Blackbird_0133_2324.jpg",
+        "path": "/scratch/nk3853/datasets/Waterbirds/009.Brewer_Blackbird/Brewer_Blackbird_0133_2324.jpg",
+        "label": "landbird",
+        "split": "train",
+        "place": "land"
+    },
+    {
+        "name": "009.Brewer_Blackbird/Brewer_Blackbird_0070_2325.jpg",
+        "path": "/scratch/nk3853/datasets/Waterbirds/009.Brewer_Blackbird/Brewer_Blackbird_0070_2325.jpg",
+        "label": "landbird",
+        "split": "train",
+        "place": "land"
+    },
+    {
+        "name": "009.Brewer_Blackbird/Brewer_Blackbird_0116_2327.jpg",
+        "path": "/scratch/nk3853/datasets/Waterbirds/009.Brewer_Blackbird/Brewer_Blackbird_0116_2327.jpg",
+        "label": "landbird",
+        "split": "train",
+        "place": "land"
+    },
+    {
+        "name": "009.Brewer_Blackbird/Brewer_Blackbird_0112_2340.jpg",
+        "path": "/scratch/nk3853/datasets/Waterbirds/009.Brewer_Blackbird/Brewer_Blackbird_0112_2340.jpg",
+        "label": "landbird",
+        "split": "train",
+        "place": "land"
+    },
+    {
+        "name": "009.Brewer_Blackbird/Brewer_Blackbird_0079_2343.jpg",
+        "path": "/scratch/nk3853/datasets/Waterbirds/009.Brewer_Blackbird/Brewer_Blackbird_0079_2343.jpg",
+        "label": "landbird",
+        "split": "train",
+        "place": "water"
+    },
+    {
+        "name": "010.Red_winged_Blackbird/Red_Winged_Blackbird_0091_4096.jpg",
+        "path": "/scratch/nk3853/datasets/Waterbirds/010.Red_winged_Blackbird/Red_Winged_Blackbird_0091_4096.jpg",
+        "label": "landbird",
+        "split": "train",
+        "place": "land"
+    },
+    {
+        "name": "001.Black_footed_Albatross/Black_Footed_Albatross_0009_34.jpg",
+        "path": "/scratch/nk3853/datasets/Waterbirds/001.Black_footed_Albatross/Black_Footed_Albatross_0009_34.jpg",
+        "label": "waterbird",
+        "split": "train",
+        "place": "water"
+    },
+    {
+        "name": "001.Black_footed_Albatross/Black_Footed_Albatross_0074_59.jpg",
+        "path": "/scratch/nk3853/datasets/Waterbirds/001.Black_footed_Albatross/Black_Footed_Albatross_0074_59.jpg",
+        "label": "waterbird",
+        "split": "train",
+        "place": "water"
+    },
+    {
+        "name": "001.Black_footed_Albatross/Black_Footed_Albatross_0014_89.jpg",
+        "path": "/scratch/nk3853/datasets/Waterbirds/001.Black_footed_Albatross/Black_Footed_Albatross_0014_89.jpg",
+        "label": "waterbird",
+        "split": "train",
+        "place": "water"
+    },
+    {
+        "name": "001.Black_footed_Albatross/Black_Footed_Albatross_0031_100.jpg",
+        "path": "/scratch/nk3853/datasets/Waterbirds/001.Black_footed_Albatross/Black_Footed_Albatross_0031_100.jpg",
+        "label": "waterbird",
+        "split": "train",
+        "place": "water"
+    },
+    {
+        "name": "001.Black_footed_Albatross/Black_Footed_Albatross_0010_796097.jpg",
+        "path": "/scratch/nk3853/datasets/Waterbirds/001.Black_footed_Albatross/Black_Footed_Albatross_0010_796097.jpg",
+        "label": "waterbird",
+        "split": "train",
+        "place": "water"
+    },
+    {
+        "name": "001.Black_footed_Albatross/Black_Footed_Albatross_0023_796059.jpg",
+        "path": "/scratch/nk3853/datasets/Waterbirds/001.Black_footed_Albatross/Black_Footed_Albatross_0023_796059.jpg",
+        "label": "waterbird",
+        "split": "train",
+        "place": "water"
+    },
+    {
+        "name": "001.Black_footed_Albatross/Black_Footed_Albatross_0040_796066.jpg",
+        "path": "/scratch/nk3853/datasets/Waterbirds/001.Black_footed_Albatross/Black_Footed_Albatross_0040_796066.jpg",
+        "label": "waterbird",
+        "split": "train",
+        "place": "water"
+    },
+    {
+        "name": "001.Black_footed_Albatross/Black_Footed_Albatross_0089_796069.jpg",
+        "path": "/scratch/nk3853/datasets/Waterbirds/001.Black_footed_Albatross/Black_Footed_Albatross_0089_796069.jpg",
+        "label": "waterbird",
+        "split": "train",
+        "place": "water"
+    },
+    {
+        "name": "001.Black_footed_Albatross/Black_Footed_Albatross_0067_170.jpg",
+        "path": "/scratch/nk3853/datasets/Waterbirds/001.Black_footed_Albatross/Black_Footed_Albatross_0067_170.jpg",
+        "label": "waterbird",
+        "split": "train",
+        "place": "water"
+    },
+    {
+        "name": "001.Black_footed_Albatross/Black_Footed_Albatross_0060_796076.jpg",
+        "path": "/scratch/nk3853/datasets/Waterbirds/001.Black_footed_Albatross/Black_Footed_Albatross_0060_796076.jpg",
+        "label": "waterbird",
+        "split": "train",
+        "place": "water"
+    },
+    {
+        "name": "001.Black_footed_Albatross/Black_Footed_Albatross_0056_796078.jpg",
+        "path": "/scratch/nk3853/datasets/Waterbirds/001.Black_footed_Albatross/Black_Footed_Albatross_0056_796078.jpg",
+        "label": "waterbird",
+        "split": "train",
+        "place": "water"
+    },
+    {
+        "name": "001.Black_footed_Albatross/Black_Footed_Albatross_0080_796096.jpg",
+        "path": "/scratch/nk3853/datasets/Waterbirds/001.Black_footed_Albatross/Black_Footed_Albatross_0080_796096.jpg",
+        "label": "waterbird",
+        "split": "train",
+        "place": "water"
+    },
+    {
+        "name": "001.Black_footed_Albatross/Black_Footed_Albatross_0017_796098.jpg",
+        "path": "/scratch/nk3853/datasets/Waterbirds/001.Black_footed_Albatross/Black_Footed_Albatross_0017_796098.jpg",
+        "label": "waterbird",
+        "split": "train",
+        "place": "water"
+    },
+    {
+        "name": "001.Black_footed_Albatross/Black_Footed_Albatross_0019_796104.jpg",
+        "path": "/scratch/nk3853/datasets/Waterbirds/001.Black_footed_Albatross/Black_Footed_Albatross_0019_796104.jpg",
+        "label": "waterbird",
+        "split": "train",
+        "place": "land"
+    },
+    {
+        "name": "001.Black_footed_Albatross/Black_Footed_Albatross_0057_796106.jpg",
+        "path": "/scratch/nk3853/datasets/Waterbirds/001.Black_footed_Albatross/Black_Footed_Albatross_0057_796106.jpg",
+        "label": "waterbird",
+        "split": "train",
+        "place": "water"
+    },
+    {
+        "name": "001.Black_footed_Albatross/Black_Footed_Albatross_0041_796108.jpg",
+        "path": "/scratch/nk3853/datasets/Waterbirds/001.Black_footed_Albatross/Black_Footed_Albatross_0041_796108.jpg",
+        "label": "waterbird",
+        "split": "train",
+        "place": "water"
+    },
+    {
+        "name": "001.Black_footed_Albatross/Black_Footed_Albatross_0071_796113.jpg",
+        "path": "/scratch/nk3853/datasets/Waterbirds/001.Black_footed_Albatross/Black_Footed_Albatross_0071_796113.jpg",
+        "label": "waterbird",
+        "split": "train",
+        "place": "water"
+    },
+    {
+        "name": "001.Black_footed_Albatross/Black_Footed_Albatross_0077_796114.jpg",
+        "path": "/scratch/nk3853/datasets/Waterbirds/001.Black_footed_Albatross/Black_Footed_Albatross_0077_796114.jpg",
+        "label": "waterbird",
+        "split": "train",
+        "place": "water"
+    },
+    {
+        "name": "001.Black_footed_Albatross/Black_Footed_Albatross_0032_796115.jpg",
+        "path": "/scratch/nk3853/datasets/Waterbirds/001.Black_footed_Albatross/Black_Footed_Albatross_0032_796115.jpg",
+        "label": "waterbird",
+        "split": "train",
+        "place": "land"
+    },
+    {
+        "name": "001.Black_footed_Albatross/Black_Footed_Albatross_0038_212.jpg",
+        "path": "/scratch/nk3853/datasets/Waterbirds/001.Black_footed_Albatross/Black_Footed_Albatross_0038_212.jpg",
+        "label": "waterbird",
+        "split": "train",
+        "place": "water"
+    },
+    {
+        "name": "001.Black_footed_Albatross/Black_Footed_Albatross_0079_796122.jpg",
+        "path": "/scratch/nk3853/datasets/Waterbirds/001.Black_footed_Albatross/Black_Footed_Albatross_0079_796122.jpg",
+        "label": "waterbird",
+        "split": "train",
+        "place": "water"
+    },
+    {
+        "name": "001.Black_footed_Albatross/Black_Footed_Albatross_0036_796127.jpg",
+        "path": "/scratch/nk3853/datasets/Waterbirds/001.Black_footed_Albatross/Black_Footed_Albatross_0036_796127.jpg",
+        "label": "waterbird",
+        "split": "train",
+        "place": "water"
+    },
+    {
+        "name": "001.Black_footed_Albatross/Black_Footed_Albatross_0039_796132.jpg",
+        "path": "/scratch/nk3853/datasets/Waterbirds/001.Black_footed_Albatross/Black_Footed_Albatross_0039_796132.jpg",
+        "label": "waterbird",
+        "split": "train",
+        "place": "water"
+    },
+    {
+        "name": "001.Black_footed_Albatross/Black_Footed_Albatross_0068_796135.jpg",
+        "path": "/scratch/nk3853/datasets/Waterbirds/001.Black_footed_Albatross/Black_Footed_Albatross_0068_796135.jpg",
+        "label": "waterbird",
+        "split": "train",
+        "place": "water"
+    },
+    {
+        "name": "001.Black_footed_Albatross/Black_Footed_Albatross_0069_796139.jpg",
+        "path": "/scratch/nk3853/datasets/Waterbirds/001.Black_footed_Albatross/Black_Footed_Albatross_0069_796139.jpg",
+        "label": "waterbird",
+        "split": "train",
+        "place": "water"
+    },
+    {
+        "name": "001.Black_footed_Albatross/Black_Footed_Albatross_0063_796141.jpg",
+        "path": "/scratch/nk3853/datasets/Waterbirds/001.Black_footed_Albatross/Black_Footed_Albatross_0063_796141.jpg",
+        "label": "waterbird",
+        "split": "train",
+        "place": "water"
+    },
+    {
+        "name": "001.Black_footed_Albatross/Black_Footed_Albatross_0081_426.jpg",
+        "path": "/scratch/nk3853/datasets/Waterbirds/001.Black_footed_Albatross/Black_Footed_Albatross_0081_426.jpg",
+        "label": "waterbird",
+        "split": "train",
+        "place": "water"
+    },
+    {
+        "name": "002.Laysan_Albatross/Laysan_Albatross_0003_1033.jpg",
+        "path": "/scratch/nk3853/datasets/Waterbirds/002.Laysan_Albatross/Laysan_Albatross_0003_1033.jpg",
+        "label": "waterbird",
+        "split": "train",
+        "place": "water"
+    },
+    {
+        "name": "002.Laysan_Albatross/Laysan_Albatross_0044_784.jpg",
+        "path": "/scratch/nk3853/datasets/Waterbirds/002.Laysan_Albatross/Laysan_Albatross_0044_784.jpg",
+        "label": "waterbird",
+        "split": "train",
+        "place": "land"
+    },
+    {
+        "name": "002.Laysan_Albatross/Laysan_Albatross_0071_792.jpg",
+        "path": "/scratch/nk3853/datasets/Waterbirds/002.Laysan_Albatross/Laysan_Albatross_0071_792.jpg",
+        "label": "waterbird",
+        "split": "train",
+        "place": "water"
+    },
+    {
+        "name": "002.Laysan_Albatross/Laysan_Albatross_0065_809.jpg",
+        "path": "/scratch/nk3853/datasets/Waterbirds/002.Laysan_Albatross/Laysan_Albatross_0065_809.jpg",
+        "label": "waterbird",
+        "split": "train",
+        "place": "water"
+    },
+    {
+        "name": "002.Laysan_Albatross/Laysan_Albatross_0061_563.jpg",
+        "path": "/scratch/nk3853/datasets/Waterbirds/002.Laysan_Albatross/Laysan_Albatross_0061_563.jpg",
+        "label": "waterbird",
+        "split": "train",
+        "place": "water"
+    },
+    {
+        "name": "002.Laysan_Albatross/Laysan_Albatross_0085_564.jpg",
+        "path": "/scratch/nk3853/datasets/Waterbirds/002.Laysan_Albatross/Laysan_Albatross_0085_564.jpg",
+        "label": "waterbird",
+        "split": "train",
+        "place": "water"
+    },
+    {
+        "name": "002.Laysan_Albatross/Laysan_Albatross_0005_565.jpg",
+        "path": "/scratch/nk3853/datasets/Waterbirds/002.Laysan_Albatross/Laysan_Albatross_0005_565.jpg",
+        "label": "waterbird",
+        "split": "train",
+        "place": "water"
+    },
+    {
+        "name": "002.Laysan_Albatross/Laysan_Albatross_0025_571.jpg",
+        "path": "/scratch/nk3853/datasets/Waterbirds/002.Laysan_Albatross/Laysan_Albatross_0025_571.jpg",
+        "label": "waterbird",
+        "split": "train",
+        "place": "water"
+    },
+    {
+        "name": "002.Laysan_Albatross/Laysan_Albatross_0092_834.jpg",
+        "path": "/scratch/nk3853/datasets/Waterbirds/002.Laysan_Albatross/Laysan_Albatross_0092_834.jpg",
+        "label": "waterbird",
+        "split": "train",
+        "place": "water"
+    },
+    {
+        "name": "002.Laysan_Albatross/Laysan_Albatross_0013_910.jpg",
+        "path": "/scratch/nk3853/datasets/Waterbirds/002.Laysan_Albatross/Laysan_Albatross_0013_910.jpg",
+        "label": "waterbird",
+        "split": "train",
+        "place": "water"
+    },
+    {
+        "name": "002.Laysan_Albatross/Laysan_Albatross_0047_619.jpg",
+        "path": "/scratch/nk3853/datasets/Waterbirds/002.Laysan_Albatross/Laysan_Albatross_0047_619.jpg",
+        "label": "waterbird",
+        "split": "train",
+        "place": "water"
+    },
+    {
+        "name": "002.Laysan_Albatross/Laysan_Albatross_0088_883.jpg",
+        "path": "/scratch/nk3853/datasets/Waterbirds/002.Laysan_Albatross/Laysan_Albatross_0088_883.jpg",
+        "label": "waterbird",
+        "split": "train",
+        "place": "water"
+    },
+    {
+        "name": "002.Laysan_Albatross/Laysan_Albatross_0076_671.jpg",
+        "path": "/scratch/nk3853/datasets/Waterbirds/002.Laysan_Albatross/Laysan_Albatross_0076_671.jpg",
+        "label": "waterbird",
+        "split": "train",
+        "place": "water"
+    },
+    {
+        "name": "002.Laysan_Albatross/Laysan_Albatross_0096_673.jpg",
+        "path": "/scratch/nk3853/datasets/Waterbirds/002.Laysan_Albatross/Laysan_Albatross_0096_673.jpg",
+        "label": "waterbird",
+        "split": "train",
+        "place": "water"
+    },
+    {
+        "name": "002.Laysan_Albatross/Laysan_Albatross_0056_500.jpg",
+        "path": "/scratch/nk3853/datasets/Waterbirds/002.Laysan_Albatross/Laysan_Albatross_0056_500.jpg",
+        "label": "waterbird",
+        "split": "train",
+        "place": "water"
+    },
+    {
+        "name": "002.Laysan_Albatross/Laysan_Albatross_0006_702.jpg",
+        "path": "/scratch/nk3853/datasets/Waterbirds/002.Laysan_Albatross/Laysan_Albatross_0006_702.jpg",
+        "label": "waterbird",
+        "split": "train",
+        "place": "water"
+    },
+    {
+        "name": "002.Laysan_Albatross/Laysan_Albatross_0073_927.jpg",
+        "path": "/scratch/nk3853/datasets/Waterbirds/002.Laysan_Albatross/Laysan_Albatross_0073_927.jpg",
+        "label": "waterbird",
+        "split": "train",
+        "place": "water"
+    },
+    {
+        "name": "002.Laysan_Albatross/Laysan_Albatross_0040_472.jpg",
+        "path": "/scratch/nk3853/datasets/Waterbirds/002.Laysan_Albatross/Laysan_Albatross_0040_472.jpg",
+        "label": "waterbird",
+        "split": "train",
+        "place": "water"
+    },
+    {
+        "name": "002.Laysan_Albatross/Laysan_Albatross_0100_735.jpg",
+        "path": "/scratch/nk3853/datasets/Waterbirds/002.Laysan_Albatross/Laysan_Albatross_0100_735.jpg",
+        "label": "waterbird",
+        "split": "train",
+        "place": "water"
+    },
+    {
+        "name": "002.Laysan_Albatross/Laysan_Albatross_0029_482.jpg",
+        "path": "/scratch/nk3853/datasets/Waterbirds/002.Laysan_Albatross/Laysan_Albatross_0029_482.jpg",
+        "label": "waterbird",
+        "split": "train",
+        "place": "water"
+    },
+    {
+        "name": "002.Laysan_Albatross/Laysan_Albatross_0018_492.jpg",
+        "path": "/scratch/nk3853/datasets/Waterbirds/002.Laysan_Albatross/Laysan_Albatross_0018_492.jpg",
+        "label": "waterbird",
+        "split": "train",
+        "place": "water"
+    },
+    {
+        "name": "002.Laysan_Albatross/Laysan_Albatross_0083_756.jpg",
+        "path": "/scratch/nk3853/datasets/Waterbirds/002.Laysan_Albatross/Laysan_Albatross_0083_756.jpg",
+        "label": "waterbird",
+        "split": "train",
+        "place": "water"
+    },
+    {
+        "name": "002.Laysan_Albatross/Laysan_Albatross_0094_1013.jpg",
+        "path": "/scratch/nk3853/datasets/Waterbirds/002.Laysan_Albatross/Laysan_Albatross_0094_1013.jpg",
+        "label": "waterbird",
+        "split": "train",
+        "place": "water"
+    }
+]
