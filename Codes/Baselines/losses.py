@@ -59,6 +59,8 @@ class SupervisedContrastiveLoss(nn.Module):
             logits_mask = torch.scatter(torch.ones_like(mask),1,torch.arange(batch_size).view(-1, 1).to(device),0)
         mask = mask * logits_mask 
 
+        logits = torch.nn.functional.normalize(logits)
+
         # compute log_prob
         exp_logits = torch.exp(logits) * logits_mask
         log_prob = logits - torch.log(exp_logits.sum(1, keepdim=True))
@@ -122,6 +124,7 @@ class BatchedSupervisedContrastiveLoss(nn.Module):
             logits_mask = torch.scatter(torch.ones_like(mask[0]),1,torch.arange(num_features).view(-1, 1).to(device),0) # [17, 17]
             logits_mask = logits_mask.unsqueeze(0).repeat(batch_size, 1, 1) # [16, 17, 17]
         mask = mask * logits_mask # [16, 17, 17]
+        logits = torch.nn.functional.normalize(logits)
 
          # compute log_prob
         exp_logits = torch.exp(logits) * logits_mask # [16, 17, 17]
@@ -157,8 +160,8 @@ def similarity_loss(features_1, features_2, labels_1, labels_2, pos_weight, neg_
     pos_mask = (labels_1.unsqueeze(1).expand(-1, len(labels_2))-labels_2.unsqueeze(0).expand(len(labels_1),-1)) == 0
     pos_mask = pos_mask.float()
 
-    pos_loss = (loss * pos_mask).mean(dim=-1)
-    neg_loss = (loss * (1- pos_mask)).mean(dim=-1)
+    pos_loss = (loss * pos_mask).mean(dim=-1).mean(dim=-1)
+    neg_loss = (loss * (1- pos_mask)).mean(dim=-1).mean(dim=-1)
     if abs:
         neg_loss = neg_loss.abs()
 
@@ -226,8 +229,8 @@ if __name__ == '__main__':
     try:
 
         test_supcon_loss()
-        # test_batched_supcon_loss()
-        # test_similarity_loss()
+        test_batched_supcon_loss()
+        test_similarity_loss()
 
         run_result = 'Program completed successfully!'
     except Exception as e:
