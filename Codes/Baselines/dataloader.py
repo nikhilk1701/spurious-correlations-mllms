@@ -21,7 +21,6 @@ def get_organized_dataset(base_dataset_path, dataset_name, dataset_split):
     elif dataset_split == 'all_combined':
         return curr_list
 
-
 # Dataloader for CLIP
 class CLIPDataloader(torch.utils.data.Dataset):
     def __init__(self, clip_transform, learning_data: dict):
@@ -32,11 +31,14 @@ class CLIPDataloader(torch.utils.data.Dataset):
         return len(self.read_data)
 
     def __getitem__(self, idx):
-        name = self.read_data[idx]['name']
-        path = self.read_data[idx]['path']
-        label = self.read_data[idx]['label']
+        name            = self.read_data[idx]['name']
+        path            = self.read_data[idx]['path']
+        label           = self.read_data[idx]['label']
+        tokenized_label = self.read_data[idx]['tokenized_label']
+        tokenized_desc  = self.read_data[idx]['tokenized_desc']
         image = self.transform(Image.open(path))
 
-        single_sample = {'name': name, 'image': image, 'label': label}
+        single_sample = {'name': name, 'image': image, 'label': label,
+                         'tokenized_label': tokenized_label, 'tokenized_desc': tokenized_desc}
 
         return single_sample

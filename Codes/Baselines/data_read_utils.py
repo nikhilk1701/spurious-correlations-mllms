@@ -82,24 +82,33 @@ def get_text_data (base_dataset_path: Path, dataset: str):
 
     # Extract unique bird classes and their descriptions
     bird_classes = data['bird_class'].unique()
-    descriptions = {row['bird_class']: row['description'] for _, row in data.iterrows()}
+    descriptions = data['description'].unique()
+    # descriptions = [{row['bird_class']: row['description']} for _, row in data.iterrows()]
 
     # Create tokenized text inputs
-    tokenized_text_inputs = torch.cat([clip.tokenize(f"a photo of a {c}") for c in bird_classes])#.to(self.device)
+    tokenized_classes      = torch.cat([clip.tokenize(f"a photo of a {c}") for c in bird_classes])
+    tokenized_descriptions = torch.cat([clip.tokenize(f"{d}") for d in descriptions])
 
-    return tokenized_text_inputs, descriptions
+    return tokenized_classes, tokenized_descriptions
 
 if __name__ == "__main__":
-    base_dataset_path = Path('D:/Downloads/Academics/Learning From Small Data/spurious-correlations-mllms')
-    dataset           = 'dummy_class_data.csv'
+    # base_dataset_path = Path('D:/Downloads/Academics/Learning From Small Data/spurious-correlations-mllms')
+    # dataset           = 'dummy_class_data.csv'
+
+    # try:
+    #     tokenized_classes, tokenized_descs = get_text_data(base_dataset_path, dataset)
+    #     print("Tokenized Classes:")
+    #     print(tokenized_classes)
+    #     print("Tokenized Descriptions:")
+    #     print(tokenized_descs)
+    # except Exception as e:
+    #     print(f"An error occurred: {e}")
+
+    base_dataset_path = Path('Data/')
+    dataset = 'waterbirds'
 
     try:
-        tokenized_text_inputs, descriptions = get_text_data(base_dataset_path, dataset)
-        print("Tokenized Text Inputs:")
-        print(tokenized_text_inputs)
-        print("\nDescriptions:")
-        for bird_class, description in descriptions.items():
-            print(f"{bird_class}: {description}")
+        datasets = get_dataset_list(base_dataset_path, dataset)
+        print(datasets)
     except Exception as e:
         print(f"An error occurred: {e}")
-
