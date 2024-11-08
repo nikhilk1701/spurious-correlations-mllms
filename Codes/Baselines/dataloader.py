@@ -66,7 +66,4 @@ class CLIPDataloader(torch.utils.data.Dataset):
         if 'object_text' in datapoint:
             object_text = datapoint['object_text']
             single_sample['object_text'] = self.tokenizer(object_text, 77, True)
-    
-        # print(single_sample)
-
         return single_sample

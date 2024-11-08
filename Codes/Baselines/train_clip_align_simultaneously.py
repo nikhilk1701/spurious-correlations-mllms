@@ -264,8 +264,10 @@ class Align_CLIP(nn.Module):
                     texts = torch.cat((self.tokenized_text_inputs, obj_text_description), dim=0).to(self.device) # bs+2
                     gt_label_text = torch.cat((gt_og_input_text, gt_label_batch), dim=0).to(self.device) # bs+2
                     gt_label_text = gt_label_text.unsqueeze(0) # 1 * (bs+2)
+                    gt_label_text = gt_label_text.repeat(gt_label_text.shape[1] - 2, 1, 1) # b * (bs + 2)
                     logits_text = self.model.encode_text(texts) # bs+2 * 1024
                     logits_text = logits_text.unsqueeze(0) # 1 * (bs+2) * 1024
+                    logits_text = logits_text.repeat(logits_text.shape[1] - 2, 1, 1) # bs * (bs + 2) * 1024
 
                 # In this case we don't
                 else:
@@ -416,7 +418,7 @@ def configuration_params():
     parser.add_argument('--batch_size', type=int, default=32)
     parser.add_argument('--epochs', type=int, default=2)
     parser.add_argument('--test_epochs', type=int, default=0.2)
-    parser.add_argument('--learning_rate', type=float, default=5e-5)
+    parser.add_argument('--learning_rate', type=float, default=8e-5)
     parser.add_argument('--num_gpu_workers', type=int, default=1)
     parser.add_argument('--weight_decay', type=float, default=0.2)
     parser.add_argument('--resume_training', type=bool, default=False)

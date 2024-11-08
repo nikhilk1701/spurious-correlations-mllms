@@ -17,4 +17,4 @@ singularity exec \
             export PATH=/ext3/miniconda3/bin:$PATH;
             export PYTHONPATH=/ext3/miniconda3/bin:$PATH;
             conda activate clip;
-            python train_clip_align_simultaneously.py --include_classtext_in_image_training=True"
+            python train_clip_align_simultaneously.py --include_classtext_in_image_training=True --mode=text_image_concat_no_bg"
