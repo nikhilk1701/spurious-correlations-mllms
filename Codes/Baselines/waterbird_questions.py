@@ -2,7 +2,6 @@ import os
 import json
 from dataloader import *
 
-
 image_dir = "/scratch/nk3853/datasets/Waterbirds"
 
 """
@@ -12,62 +11,77 @@ image_dir = "/scratch/nk3853/datasets/Waterbirds"
     run using
         ''echo > questions.jsonl; python waterbird_questions.py''
 """
-def generate_questions():
+def generate_questions(dataset_split):
     text = ["waterbird", "landbird"]
     dataset_name = "waterbirds"
     scratch_dir = os.getenv("SCRATCH")
     img_dir = scratch_dir + '/datasets'
 
-    dataset = get_organized_dataset(base_dataset_path=Path(img_dir), dataset_name=dataset_name, dataset_split='all_combined')
+    dataset = get_organized_dataset(base_dataset_path=Path(img_dir), dataset_name=dataset_name, dataset_split=dataset_split)
 
-    questions = []
+    questions_object = []
+    questions_bground = []
     question_id = 1
     wblb = 0
     wbwb = 0
     lblb = 0
     lbwb = 0
+
+    per_class_count = 250
     for datapoint in dataset:
-        question = {}
-        question["question_id"] = question_id
         image_class = datapoint['label']
         background = datapoint['place']
 
-        if image_class == "waterbird" and background == "land" and wblb < 10:
-            question["text"] = f"Describe the {image_class} in the image, ignore the {background}. Include what visual features it has common with other birds of the same class. Be concise."
-            # question["text"] = f"I think that this is a landbird. If I am wrong, tell me why."
-            question["image"] = datapoint["name"]
-            questions.append(question)
+        question_bground = {}
+        question_object  = {}
+
+        question = {}
+        question["question_id"] = question_id
+        question["image"] = datapoint["name"]
+        question["label"] = image_class
+
+        question_object = question.copy()
+        question_bground = question.copy()
+        # question["text"] = f"Describe the {image_class} in the image, ignore the {background}. Include what visual features it has common with other birds of the same class. Be concise."
+        # question["text"] = f"I think that this is a landbird. If I am wrong, tell me why."            
+        question_bground["text"] = "Describe the background in the image, ignore the bird. Be concise."
+        question_object["text"] = "Identify the bird in the image and describe distinguishing features of the bird in the image. Ignore the background, be concise."
+        
+
+        if image_class == "waterbird" and background == "land" and wblb < per_class_count:
+            questions_bground.append(question_bground)
+            questions_object.append(question_object)
             wblb += 1
             question_id += 1
 
-        if image_class == "waterbird" and background == "water" and wbwb < 10:
-            question["text"] = f"Describe the {image_class} in the image, ignore the {background}. Include what visual features it has common with other birds of the same class. Be concise."
-            question["image"] = datapoint["name"]
-            questions.append(question)
+        if image_class == "waterbird" and background == "water" and wbwb < per_class_count:
+            questions_bground.append(question_bground)
+            questions_object.append(question_object)
             wbwb += 1
             question_id += 1
         
-        if image_class == "landbird" and background == "land" and lblb < 10:
-            question["text"] = f"Describe the {image_class} in the image, ignore the {background}. Include what visual features it has common with other birds of the same class. Be concise."
-            question["image"] = datapoint["name"]
-            questions.append(question)
+        if image_class == "landbird" and background == "land" and lblb < per_class_count:
+            questions_bground.append(question_bground)
+            questions_object.append(question_object)
             lblb += 1
             question_id += 1
         
-        if image_class == "landbird" and background == "water" and lbwb < 10:
-            question["text"] = f"Describe the {image_class} in the image, ignore the {background}. Include what visual features it has common with other birds of the same class. Be concise."
-            question["image"] = datapoint["name"]
-            questions.append(question)
+        if image_class == "landbird" and background == "water" and lbwb < per_class_count:
+            questions_bground.append(question_bground)
+            questions_object.append(question_object)
             lbwb += 1
             question_id += 1
 
-    # print(questions)
-
-    with open('questions.jsonl', 'a') as questions_file:
-        for question in questions:
+    with open(f"outputs/questions_bground_{dataset_split}.jsonl", 'a') as questions_file:
+        for question in questions_bground:
             questions_file.write(json.dumps(question) + "\n")
 
-generate_questions()
+    with open(f"outputs/questions_object_{dataset_split}.jsonl", 'a') as questions_file:
+        for question in questions_object:
+            questions_file.write(json.dumps(question) + "\n")
+
+
+generate_questions('test')
 
 ## question format for reference
 # {"question_id": 248, "text": "I think that this is a landbird. If I am wrong, tell me why.", "image": "005.Crested_Auklet/Crested_Auklet_0047_794918.jpg"}

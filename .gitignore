@@ -1,3 +1,4 @@
+**/outputs/
 *.out
 *.tar.gz
 __pycache__

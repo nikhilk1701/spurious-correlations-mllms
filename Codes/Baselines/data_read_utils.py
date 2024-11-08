@@ -2,10 +2,10 @@
 # Date Created: 10/8/2024
 # Last Modified By: Shika
 
-
 from pathlib import Path
 import pandas as pd
 import os
+import json
 
 def get_dataset_list(base_dataset_path: Path, dataset: str):
     datasets = []
@@ -63,7 +63,7 @@ def get_dataset_list(base_dataset_path: Path, dataset: str):
                     label_place_match_count_val += 1
 
             datasets.append(dataset_entry)
-
+        
         print("number of datasets: ", len(datasets))
 
         # print num of train, test, val images
@@ -71,3 +71,24 @@ def get_dataset_list(base_dataset_path: Path, dataset: str):
         print("Count of images in test where label (land/water) and place (land/water) match: ", label_place_match_count_test)
         print("Count of images in val where label (land/water) and place (land/water) match: ", label_place_match_count_val)
     return datasets
+
+def get_dataset_list_auxillary(base_dataset_path: Path, dataset: str, questions_file: str, answers_file: str,):
+    dataset = get_dataset_list(base_dataset_path, dataset)
+    dataset_dict = {}
+
+    for datapoint in dataset:
+        dataset_dict[datapoint['name']] = datapoint
+
+    with open(answers_file, 'r') as afile, open("./outputs/questions_bground_test.jsonl", 'r') as qfile:
+        for (qline, aline) in zip(qfile, afile):
+            ques = json.loads(qline)
+            ans = json.loads(aline)
+            dataset_dict[ques['image']]['bground_text'] = ans['text']
+    
+    with open(questions_file, 'r') as afile, open("./outputs/questions_object_test.jsonl", 'r') as qfile:
+        for (qline, aline) in zip(qfile, afile):
+            ques = json.loads(qline)
+            ans = json.loads(aline)
+            dataset_dict[ques['image']]['object_text'] = ans['text']
+    
+    return list(dataset_dict.values())

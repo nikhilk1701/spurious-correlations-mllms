@@ -1,11 +1,16 @@
+import datetime
+
 from llava.model.builder import load_pretrained_model
 from llava.mm_utils import get_model_name_from_path
 from llava.eval.model_vqa import eval_model
 
 model_path = "liuhaotian/llava-v1.5-7b"
-question_file = "./questions.jsonl"
+question_file = "./outputs/questions_object_test.jsonl"
 image_folder = "/scratch/nk3853/datasets/Waterbirds"
-answers_file = "./answers.jsonl"
+answers_file = f"/scratch/nk3853/answers_object_test_{str(datetime.datetime.now())}.jsonl"
+
+with open(answers_file, 'w') as fp:
+    pass
 
 args = type('Args', (), {
     "model_path": model_path,
