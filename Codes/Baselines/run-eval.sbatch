@@ -16,5 +16,5 @@ singularity exec \
             /bin/bash -c "source /ext3/miniconda3/etc/profile.d/conda.sh; 
             export PATH=/ext3/miniconda3/bin:$PATH;
             export PYTHONPATH=/ext3/miniconda3/bin:$PATH;
-            conda activate llava;
-            python llava_inference.py"
+            conda activate clip;
+            python train_clip_align_simultaneously.py --include_classtext_in_image_training=True"

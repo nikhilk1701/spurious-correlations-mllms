@@ -72,23 +72,28 @@ def get_dataset_list(base_dataset_path: Path, dataset: str):
         print("Count of images in val where label (land/water) and place (land/water) match: ", label_place_match_count_val)
     return datasets
 
-def get_dataset_list_auxillary(base_dataset_path: Path, dataset: str, questions_file: str, answers_file: str,):
+def get_dataset_list_auxillary(base_dataset_path: Path, dataset: str, llava_outdir: str):
     dataset = get_dataset_list(base_dataset_path, dataset)
     dataset_dict = {}
 
     for datapoint in dataset:
         dataset_dict[datapoint['name']] = datapoint
 
-    with open(answers_file, 'r') as afile, open("./outputs/questions_bground_test.jsonl", 'r') as qfile:
+    bground_questions = llava_outdir + '/questions_bground.jsonl'
+    object_questions = llava_outdir + '/questions_object.jsonl'
+    bground_answers = llava_outdir + '/answers_bground.jsonl'
+    object_answers = llava_outdir + '/answers_object.jsonl'
+
+    with open(bground_answers, 'r') as afile, open(bground_questions, 'r') as qfile:
         for (qline, aline) in zip(qfile, afile):
             ques = json.loads(qline)
             ans = json.loads(aline)
             dataset_dict[ques['image']]['bground_text'] = ans['text']
     
-    with open(questions_file, 'r') as afile, open("./outputs/questions_object_test.jsonl", 'r') as qfile:
+    with open(object_answers, 'r') as afile, open(object_questions, 'r') as qfile:
         for (qline, aline) in zip(qfile, afile):
             ques = json.loads(qline)
             ans = json.loads(aline)
             dataset_dict[ques['image']]['object_text'] = ans['text']
-    
-    return list(dataset_dict.values())
+
+    return [val for val in list(dataset_dict.values()) if 'object_text' in val and 'bground_text' in val]

@@ -87,15 +87,20 @@ class Align_CLIP(nn.Module):
     # Initialize dataloaders
     def init_dataloaders(self):
 
-        self.train_data, self.val_data, self.test_data = get_organized_dataset(self.img_dir, self.dataset, "all")
-        
-        train_dataset = CLIPDataloader(clip_transform= self.preprocess, learning_data= self.train_data)
+        llava_outdir = '/scratch/nk3853/test_2024-11-07-8-24/'
+
+        self.train_data, self.val_data, self.test_data = get_organized_dataset_auxillary(self.img_dir, self.dataset, "all", llava_outdir)
+        self.train_data = self.test_data
+
+        # print(self.train_data[0])
+
+        train_dataset = CLIPDataloader(clip_transform= self.preprocess, clip_tokenizer=clip.tokenize, learning_data= self.train_data)
         self.train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=self.config.batch_size, pin_memory=True, num_workers=self.config.num_gpu_workers, shuffle=True)
 
-        val_dataset = CLIPDataloader(clip_transform= self.preprocess, learning_data= self.val_data)
+        val_dataset = CLIPDataloader(clip_transform= self.preprocess, clip_tokenizer=clip.tokenize, learning_data= self.val_data)
         self.val_loader = torch.utils.data.DataLoader(val_dataset, batch_size=self.config.batch_size, pin_memory=True, num_workers=self.config.num_gpu_workers, shuffle=False)
 
-        test_dataset = CLIPDataloader(clip_transform= self.preprocess, learning_data= self.test_data)
+        test_dataset = CLIPDataloader(clip_transform= self.preprocess, clip_tokenizer=clip.tokenize, learning_data= self.test_data)
         self.test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=self.config.batch_size, pin_memory=True, num_workers=self.config.num_gpu_workers, shuffle=False)
         return
 
@@ -170,7 +175,7 @@ class Align_CLIP(nn.Module):
         if self.config.mode == 'text_image_concat_no_bg':
             loss_total = SupervisedContrastiveLoss(temperature= self.config.temperature, base_temperature= self.config.base_temperature, contrast_mode= "all")
         elif self.config.mode == 'separate_text_image':
-            loss_img = BatchedSupervisedContrastiveLoss(temperature= self.config.temperature, base_temperature= self.config.base_temperature, contrast_mode= "single")
+            loss_img = BatchedSupervisedContrastiveLoss(temperature= self.config.temperature, base_temperature= self.config.base_temperature, contrast_mode= "one")
             loss_text = SupervisedContrastiveLoss(temperature= self.config.temperature, base_temperature= self.config.base_temperature, contrast_mode= "all")
 
         for iteration in tqdm(range(start_iteration, total_iterations + 1)):
@@ -184,12 +189,12 @@ class Align_CLIP(nn.Module):
 
             sampled_batch, iterator_model = self.get_next_train_batch(self.train_loader, iterator_model)
             images = sampled_batch['image']
-            gt_label_image_text = sampled_batch['gt_label']
-            obj_text_description = sampled_batch['obj_text_description']
-            background_text_description = sampled_batch['background_text_description']
-            gt_label_background = sampled_batch['gt_label_background']
+            gt_label_image_text = sampled_batch['label']
+            obj_text_description = sampled_batch['object_text'].squeeze()
+            background_text_description = sampled_batch['bground_text']
+            gt_label_background = sampled_batch['place']
 
-            if self.background_consider == False:
+            if self.config.background_consider == False:
                 # convert gt_label_img_text_vector to 0 or 1 based on classname waterbird =0, landbird = 1
                 class_to_index = {cls: idx for idx, cls in enumerate(self.text_classes)}
                 gt_og_input_text = torch.tensor([class_to_index[label] for label in self.text_classes], device=self.device).unsqueeze(1) # 2
@@ -265,11 +270,17 @@ class Align_CLIP(nn.Module):
                 # In this case we don't
                 else:
                     logits_text = self.model.encode_text(obj_text_description).unsqueeze(0) # 1 * bs * 1024
-                    gt_label_text = gt_label_batch.unsqueeze(0) # 1 * bs
+                    logits_text = logits_text.repeat(logits_text.shape[1], 1, 1) # bs * bs* 1024
+                    gt_label_text = gt_label_batch.unsqueeze(0) #  1 * bs
+                    gt_label_text = gt_label_text.repeat(gt_label_text.shape[1], 1, 1)
 
                 # concatenate the image and text features and their label vectors too to get 16*19*1024 or 16*17*1024
                 logits = torch.cat((logits_image, logits_text), dim=1) # bs* bs+3 * 1024 or bs* bs+1 * 1024
+                # print(logits_image.size())
+                # print(logits_text.size())
+                # print(logits.size())
                 labels_image_text = torch.cat((gt_label_image, gt_label_text), dim=1) # bs* bs+3 or bs* bs+1
+                # print(labels_image_text.size())
                 image_loss_term = loss_img(logits, labels_image_text)
 
                 
@@ -328,7 +339,7 @@ class Align_CLIP(nn.Module):
 
             self.current_iteration += 1
 
-            del sampled_batch, images, texts, logits_per_image, logits_per_text
+            del sampled_batch, images, texts
             torch.cuda.empty_cache()
 
         return
@@ -412,7 +423,8 @@ def configuration_params():
     parser.add_argument('--results_dir', type=str, default=results_dir)
     parser.add_argument('--model_type', type=str, default='ViT-B/32', choices=['ViT-B/32', 'ViT-B/16', 'ViT-L/14', 'ViT-L/14@336px'])
     parser.add_argument('--optimizer', type=str, default='adam', choices=['adam', 'SGD'])
-    
+    parser.add_argument('--temperature', type=float, default=0.07)
+    parser.add_argument('--base_temperature', type=float, default=0.07)
     parser.add_argument('--mode', type=str, default='separate_text_image', choices=['separate_text_image', 'text_image_concat_no_bg', 'yu_yang_mitigating', 'separate_text_image_yes_bg_4classes'])
     parser.add_argument('--background_consider', type=bool, default=False)
     parser.add_argument('--include_classtext_in_image_training', type=bool, default=False)

@@ -21,8 +21,8 @@ def get_organized_dataset(base_dataset_path, dataset_name, dataset_split):
     elif dataset_split == 'all_combined':
         return curr_list
 
-def get_organized_dataset_auxillary(base_dataset_path, dataset_name, dataset_split, questions_file, answers_file):
-    curr_list = get_dataset_list_auxillary(base_dataset_path, dataset_name, questions_file, answers_file)
+def get_organized_dataset_auxillary(base_dataset_path, dataset_name, dataset_split, llava_outdir):
+    curr_list = get_dataset_list_auxillary(base_dataset_path, dataset_name, llava_outdir)
    
     if dataset_split == 'all_combined':
         return curr_list
@@ -67,4 +67,6 @@ class CLIPDataloader(torch.utils.data.Dataset):
             object_text = datapoint['object_text']
             single_sample['object_text'] = self.tokenizer(object_text, 77, True)
     
+        # print(single_sample)
+
         return single_sample
