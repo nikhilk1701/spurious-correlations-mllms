@@ -16,6 +16,10 @@ def get_organized_dataset(base_dataset_path, dataset_name, dataset_split):
 
     if dataset_split == 'test':
         return test_samples
+    elif dataset_split == 'train':
+        return train_samples
+    elif dataset_split == 'val':
+        return val_samples
     elif dataset_split == 'all':
         return train_samples, val_samples, test_samples
     elif dataset_split == 'all_combined':

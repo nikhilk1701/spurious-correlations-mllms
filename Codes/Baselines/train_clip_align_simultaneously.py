@@ -87,18 +87,14 @@ class Align_CLIP(nn.Module):
     # Initialize dataloaders
     def init_dataloaders(self):
 
-        llava_outdir = '/scratch/nk3853/test_2024-11-07-8-24/'
-
-        self.train_data, self.val_data, self.test_data = get_organized_dataset_auxillary(self.img_dir, self.dataset, "all", llava_outdir)
-        self.train_data = self.test_data
-
-        # print(self.train_data[0])
+        self.train_data = get_organized_dataset_auxillary(self.img_dir, self.dataset, "train", self.config.llava_out_dir)
+        self.test_data = get_organized_dataset(self.img_dir, self.dataset, "test")
 
         train_dataset = CLIPDataloader(clip_transform= self.preprocess, clip_tokenizer=clip.tokenize, learning_data= self.train_data)
         self.train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=self.config.batch_size, pin_memory=True, num_workers=self.config.num_gpu_workers, shuffle=True)
 
-        val_dataset = CLIPDataloader(clip_transform= self.preprocess, clip_tokenizer=clip.tokenize, learning_data= self.val_data)
-        self.val_loader = torch.utils.data.DataLoader(val_dataset, batch_size=self.config.batch_size, pin_memory=True, num_workers=self.config.num_gpu_workers, shuffle=False)
+        # val_dataset = CLIPDataloader(clip_transform= self.preprocess, clip_tokenizer=clip.tokenize, learning_data= self.val_data)
+        # self.val_loader = torch.utils.data.DataLoader(val_dataset, batch_size=self.config.batch_size, pin_memory=True, num_workers=self.config.num_gpu_workers, shuffle=False)
 
         test_dataset = CLIPDataloader(clip_transform= self.preprocess, clip_tokenizer=clip.tokenize, learning_data= self.test_data)
         self.test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=self.config.batch_size, pin_memory=True, num_workers=self.config.num_gpu_workers, shuffle=False)
@@ -430,13 +426,19 @@ def configuration_params():
     parser.add_argument('--mode', type=str, default='separate_text_image', choices=['separate_text_image', 'text_image_concat_no_bg', 'yu_yang_mitigating', 'separate_text_image_yes_bg_4classes'])
     parser.add_argument('--background_consider', type=bool, default=False)
     parser.add_argument('--include_classtext_in_image_training', type=bool, default=False)
+    parser.add_argument('--llava_out_dir', type=str, default=f'{scratch_dir}/pipeline_results0000')
 
     config = parser.parse_args()
     return config
 
 
-def main():
+def train_clip_align_simultaneously(run_dir, mode, learning_rate, include_classtext_in_image_training = False):
     config = configuration_params()
+    config.llava_out_dir = run_dir
+    config.results_dir = run_dir
+    config.mode = mode
+    config.learning_rate = learning_rate
+    config.include_classtext_in_image_training = include_classtext_in_image_training
     scratch_dir = os.getenv("SCRATCH")
     img_dir = scratch_dir + '/datasets'
     model = Align_CLIP(model_type=config.model_type, dataset='waterbirds', text_classes=['waterbird', 'landbird'], img_dir=img_dir, config=config)

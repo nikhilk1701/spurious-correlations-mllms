@@ -11,7 +11,7 @@ image_dir = "/scratch/nk3853/datasets/Waterbirds"
     run using
         ''echo > questions.jsonl; python waterbird_questions.py''
 """
-def generate_questions(dataset_split):
+def generate_questions(dataset_split, results_dir, per_class_count = 500):
     text = ["waterbird", "landbird"]
     dataset_name = "waterbirds"
     scratch_dir = os.getenv("SCRATCH")
@@ -27,7 +27,6 @@ def generate_questions(dataset_split):
     lblb = 0
     lbwb = 0
 
-    per_class_count = 250
     for datapoint in dataset:
         image_class = datapoint['label']
         background = datapoint['place']
@@ -72,16 +71,13 @@ def generate_questions(dataset_split):
             lbwb += 1
             question_id += 1
 
-    with open(f"outputs/questions_bground_{dataset_split}.jsonl", 'a') as questions_file:
+    with open(f"{results_dir}/questions_bground.jsonl", 'a') as questions_file:
         for question in questions_bground:
             questions_file.write(json.dumps(question) + "\n")
 
-    with open(f"outputs/questions_object_{dataset_split}.jsonl", 'a') as questions_file:
+    with open(f"{results_dir}/questions_object.jsonl", 'a') as questions_file:
         for question in questions_object:
             questions_file.write(json.dumps(question) + "\n")
-
-
-generate_questions('test')
 
 ## question format for reference
 # {"question_id": 248, "text": "I think that this is a landbird. If I am wrong, tell me why.", "image": "005.Crested_Auklet/Crested_Auklet_0047_794918.jpg"}
