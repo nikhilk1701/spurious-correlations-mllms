@@ -28,12 +28,13 @@ from torch.utils.tensorboard import SummaryWriter
 from dataloader import *
 from eval_clip import *
 from losses import *
+from networks import *
 import torch.nn.functional as F
 logging.getLogger('matplotlib').setLevel(logging.ERROR)
 
 class Align_CLIP(nn.Module):
 
-    def __init__(self, model_type, dataset, text_classes, img_dir, config):
+    def __init__(self, model_type, dataset, text_classes, bg_classes, img_dir, config):
         super(Align_CLIP, self).__init__() 
 
         self.config = config
@@ -46,8 +47,13 @@ class Align_CLIP(nn.Module):
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         self.model, self.preprocess = clip.load(model_type, device= self.device)
 
+        if self.config.network_type == 'clip_modified':
+            self.model = CLIPCombinedModified(self.model, layer_type=self.config.layer_type_for_modified_clip)
+
         # Get text features
         self.tokenized_text_inputs = torch.cat([clip.tokenize(f"a photo of a {c}.") for c in text_classes]).to(self.device)
+        self.bg_classes = bg_classes
+
         if self.config.optimizer == 'adam':
             self.optimizer = Adam(self.model.parameters(), weight_decay=self.config.weight_decay, betas=(0.9,0.98), eps=1e-6, lr=self.config.learning_rate)
 
@@ -197,7 +203,7 @@ class Align_CLIP(nn.Module):
                 gt_label_batch = torch.tensor([class_to_index[label] for label in gt_label_image_text], device=self.device).unsqueeze(1) # bs
             else:
                 # also consider the background text as 2 diferent classes according to water and land
-                class_to_index = {cls: idx for idx, cls in enumerate(self.text_classes + gt_label_background)} # so 4 classes now
+                class_to_index = {cls: idx for idx, cls in enumerate(self.text_classes + self.bg_classes)} # so 4 classes now
                 gt_og_input_text = torch.tensor([class_to_index[label] for label in self.text_classes], device=self.device).unsqueeze(1) # 2
                 gt_label_batch_text_desc = torch.tensor([class_to_index[label] for label in gt_label_image_text], device=self.device).unsqueeze(1) # bs
                 gt_label_batch_background = torch.tensor([class_to_index[label] for label in gt_label_background], device=self.device).unsqueeze(1) # bs
@@ -260,10 +266,10 @@ class Align_CLIP(nn.Module):
                     texts = torch.cat((self.tokenized_text_inputs, obj_text_description), dim=0).to(self.device) # bs+2
                     gt_label_text = torch.cat((gt_og_input_text, gt_label_batch), dim=0).to(self.device) # bs+2
                     gt_label_text = gt_label_text.unsqueeze(0) # 1 * (bs+2)
-                    gt_label_text = gt_label_text.repeat(gt_label_text.shape[1] - 2, 1, 1) # b * (bs + 2)
+                    gt_label_text = gt_label_text.repeat(images.shape[0], 1, 1) # b * (bs + 2)
                     logits_text = self.model.encode_text(texts) # bs+2 * 1024
                     logits_text = logits_text.unsqueeze(0) # 1 * (bs+2) * 1024
-                    logits_text = logits_text.repeat(logits_text.shape[1] - 2, 1, 1) # bs * (bs + 2) * 1024
+                    logits_text = logits_text.repeat(images.shape[0], 1, 1) # bs * (bs + 2) * 1024
 
                 # In this case we don't
                 else:
@@ -306,10 +312,20 @@ class Align_CLIP(nn.Module):
 
                 loss = image_loss_term + text_loss_term
 
-            
-            ###################################################
-            # Have to still add this case
-            # elif self.config.mode == 'separate_text_image_yes_bg_4classes':
+            # One thing to note: In this loss case we are not matching waterbird class to waterbird text at all supervised. 
+            # For example:
+            # We are just matching all waterbirds on water images to other waterbirds on water images. And we are matching the text descriptions of all waterbirds on water images to text descriptions from other waterbirds on water images.
+            elif self.config.mode == 'separate_text_image_yes_bg_4classes':
+                # add background classes to classnames to create 4 different strings of classes
+                new_classes = np.array(self.text_classes)[:, None] + np.array(self.bg_classes) # converting to numpy column vector to do broadcasting
+                class_to_index = {cls: idx for idx, cls in enumerate(new_classes.flatten())} # gives 4 classes
+
+                class_names_of_sample = np.char.add(gt_label_image_text, gt_label_background) # bs # this does elementwise string addition so if it's waterbird and water then waterbirdwater
+                gt_label_batch = torch.tensor([class_to_index[label] for label in class_names_of_sample], device=self.device).unsqueeze(1) # bs
+
+                #########################################################
+                # REST OF THIS HAS TO BE FILLED IN
+                ##########################################################
 
 
             self.optimizer.zero_grad()
@@ -428,6 +444,9 @@ def configuration_params():
     parser.add_argument('--include_classtext_in_image_training', type=bool, default=False)
     parser.add_argument('--llava_out_dir', type=str, default=f'{scratch_dir}/pipeline_results0000')
 
+    parser.add_argument('--network_type', type=str, default= 'clip', choices=['clip', 'modified_clip'])
+    parser.add_argument('--layer_type_for_modified_clip', type=str, default= 'linear', choices=['mlp', 'linear'])
+
     config = parser.parse_args()
     return config
 
@@ -441,7 +460,7 @@ def train_clip_align_simultaneously(run_dir, mode, learning_rate, include_classt
     config.include_classtext_in_image_training = include_classtext_in_image_training
     scratch_dir = os.getenv("SCRATCH")
     img_dir = scratch_dir + '/datasets'
-    model = Align_CLIP(model_type=config.model_type, dataset='waterbirds', text_classes=['waterbird', 'landbird'], img_dir=img_dir, config=config)
+    model = Align_CLIP(model_type=config.model_type, dataset='waterbirds', text_classes=['waterbird', 'landbird'], bg_classes= ['water', 'land'], img_dir=img_dir, config=config)
     model.train_model()
 
     return
