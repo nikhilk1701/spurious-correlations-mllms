@@ -38,6 +38,8 @@ class SupervisedContrastiveLoss(nn.Module):
             raise ValueError('Num of labels does not match num of features')
         mask = torch.eq(labels, labels.T).float().to(device) # [16, 16]
 
+        features = torch.nn.functional.normalize(features)
+
         # compute logits
         if self.contrast_mode == 'one':
             anchor_feature = features[0, :].unsqueeze(0) # taking the first feature vector as anchor [1, 1024]
@@ -59,15 +61,13 @@ class SupervisedContrastiveLoss(nn.Module):
             logits_mask = torch.scatter(torch.ones_like(mask),1,torch.arange(batch_size).view(-1, 1).to(device),0)
         mask = mask * logits_mask 
 
-        logits = torch.nn.functional.normalize(logits)
-
         # compute log_prob
         exp_logits = torch.exp(logits) * logits_mask
         log_prob = logits - torch.log(exp_logits.sum(1, keepdim=True))
 
         # compute mean of log-likelihood over positive
         mask_pos_pairs = mask.sum(1)
-        mask_pos_pairs = torch.where(mask_pos_pairs < 1e-6, 1, mask_pos_pairs)
+        mask_pos_pairs = torch.where(mask_pos_pairs == 0, 1, mask_pos_pairs)
         mean_log_prob_pos = (mask * log_prob).sum(1) / mask_pos_pairs
 
         # loss
@@ -75,7 +75,6 @@ class SupervisedContrastiveLoss(nn.Module):
         loss = loss.mean()
 
         return loss
-
 
 # Just rewrote the above loss only with torch.bmm instead of torch.matmul. This way it can handle no_of_images, no_of_features, feature_dim [16, 17, 1024]
 # Could just do the above loss 16 times for each image in a loop then mean but that would be inefficient
@@ -103,6 +102,8 @@ class BatchedSupervisedContrastiveLoss(nn.Module):
         labels_expanded = labels.unsqueeze(1) # [16, 1, 17]	
         mask = (labels_expanded == labels_expanded.transpose(1, 2)).float().to(device) # [16, 17, 17]
 
+        features = torch.nn.functional.normalize(features)
+
         # compute logits
         if self.contrast_mode == 'one':
             anchor_feature = features[:, 0, :].unsqueeze(1) # taking the first feature vector as anchor [16, 1, 1024]
@@ -124,9 +125,8 @@ class BatchedSupervisedContrastiveLoss(nn.Module):
             logits_mask = torch.scatter(torch.ones_like(mask[0]),1,torch.arange(num_features).view(-1, 1).to(device),0) # [17, 17]
             logits_mask = logits_mask.unsqueeze(0).repeat(batch_size, 1, 1) # [16, 17, 17]
         mask = mask * logits_mask # [16, 17, 17]
-        logits = torch.nn.functional.normalize(logits)
 
-         # compute log_prob
+        # compute log_prob
         exp_logits = torch.exp(logits) * logits_mask # [16, 17, 17]
         log_prob = logits - torch.log(exp_logits.sum(1, keepdim=True)) # [16, 17, 17]
 

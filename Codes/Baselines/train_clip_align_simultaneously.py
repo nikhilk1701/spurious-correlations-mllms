@@ -321,7 +321,7 @@ class Align_CLIP(nn.Module):
             self.logger.add_scalar(f'TrainLoss', loss_dict['loss'], loss_dict['iteration'])
 
             per_sample_loss = train_loss[-1] / self.config.batch_size
-            print(f'Iteration {iteration} done with per closs {per_sample_loss:0.4f}.')
+            print(f'Iteration {iteration} done with per closs {per_sample_loss}.')
 
             if iteration % test_iteration == 0 or iteration == total_iterations:
                 self.test_dict['test_acc']['iter_no'].append(self.current_iteration)
@@ -432,13 +432,15 @@ def configuration_params():
     return config
 
 
-def train_clip_align_simultaneously(run_dir, mode, learning_rate, include_classtext_in_image_training = False):
+def train_clip_align_simultaneously(run_dir, mode, learning_rate, include_classtext_in_image_training = False, epochs = 10):
     config = configuration_params()
     config.llava_out_dir = run_dir
     config.results_dir = run_dir
     config.mode = mode
     config.learning_rate = learning_rate
     config.include_classtext_in_image_training = include_classtext_in_image_training
+    config.epochs = epochs
+    config.test_epochs = (epochs * 1.0) / 10.0
     scratch_dir = os.getenv("SCRATCH")
     img_dir = scratch_dir + '/datasets'
     model = Align_CLIP(model_type=config.model_type, dataset='waterbirds', text_classes=['waterbird', 'landbird'], img_dir=img_dir, config=config)
