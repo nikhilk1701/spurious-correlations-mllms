@@ -512,12 +512,13 @@ def configuration_params():
     return config
 
 
-def train_clip_align_separately(run_dir, learning_rate, include_classtext_in_image_training = False):
+def train_clip_align_separately(run_dir, learning_rate, include_classtext_in_image_training = False, background_consider=False):
     config = configuration_params()
     config.llava_out_dir = run_dir
     config.results_dir = run_dir
     config.learning_rate = learning_rate
     config.include_classtext_in_image_training = include_classtext_in_image_training
+    config.background_consider = background_consider
     scratch_dir = os.getenv("SCRATCH")
     img_dir = scratch_dir + '/datasets'
     model = Align_CLIP_Separately(model_type=config.model_type, dataset='waterbirds', text_classes=['waterbird', 'landbird'], bg_classes= ['water', 'land'], img_dir=img_dir, config=config)
