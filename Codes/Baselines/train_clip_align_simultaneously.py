@@ -451,7 +451,7 @@ def configuration_params():
     return config
 
 
-def train_clip_align_simultaneously(run_dir, mode, learning_rate, include_classtext_in_image_training = False, epochs = 10):
+def train_clip_align_simultaneously(run_dir, mode, learning_rate, include_classtext_in_image_training = False, epochs = 10, background_consider=False):
     config = configuration_params()
     config.llava_out_dir = run_dir
     config.results_dir = run_dir
@@ -460,6 +460,7 @@ def train_clip_align_simultaneously(run_dir, mode, learning_rate, include_classt
     config.include_classtext_in_image_training = include_classtext_in_image_training
     config.epochs = epochs
     config.test_epochs = (epochs * 1.0) / 10.0
+    config.background_consider = background_consider
     scratch_dir = os.getenv("SCRATCH")
     img_dir = scratch_dir + '/datasets'
     model = Align_CLIP(model_type=config.model_type, dataset='waterbirds', text_classes=['waterbird', 'landbird'], bg_classes= ['water', 'land'], img_dir=img_dir, config=config)
