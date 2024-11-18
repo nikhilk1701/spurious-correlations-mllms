@@ -38,7 +38,7 @@ class SupervisedContrastiveLoss(nn.Module):
             raise ValueError('Num of labels does not match num of features')
         mask = torch.eq(labels, labels.T).float().to(device) # [16, 16]
 
-        features = torch.nn.functional.normalize(features)
+        features = torch.nn.functional.normalize(features, dim=1)
 
         # compute logits
         if self.contrast_mode == 'one':
@@ -102,7 +102,7 @@ class BatchedSupervisedContrastiveLoss(nn.Module):
         labels_expanded = labels.unsqueeze(1) # [16, 1, 17]	
         mask = (labels_expanded == labels_expanded.transpose(1, 2)).float().to(device) # [16, 17, 17]
 
-        features = torch.nn.functional.normalize(features)
+        features = torch.nn.functional.normalize(features, dim=2)
 
         # compute logits
         if self.contrast_mode == 'one':
