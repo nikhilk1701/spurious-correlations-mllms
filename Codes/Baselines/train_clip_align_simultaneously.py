@@ -47,7 +47,7 @@ class Align_CLIP(nn.Module):
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         self.model, self.preprocess = clip.load(model_type, device= self.device)
 
-        if self.config.network_type == 'clip_modified':
+        if self.config.network_type == 'modified_clip':
             self.model = CLIPCombinedModified(self.model, layer_type=self.config.layer_type_for_modified_clip)
 
         # Get text features
@@ -108,13 +108,20 @@ class Align_CLIP(nn.Module):
 
     # Makes a model's weights trainable/frozen
     @staticmethod
-    def weight_mode(model, trainable=True):
-        for param in model.parameters():
-            if trainable:
-                param.requires_grad_(True)
-            else:
-                param.requires_grad_(False)
-
+    def weight_mode(model, trainable=True, probe=False):
+        if not probe:
+            for _, param in model.named_parameters():
+                if trainable:
+                    param.requires_grad_(True)
+                else:
+                    param.requires_grad_(False)
+        else:
+            # print([name for name, _ in model.named_parameters()])
+            for name, param in model.named_parameters():
+                if trainable and ("projection_head" in name):
+                    param.requires_grad_(True)
+                else:
+                    param.requires_grad_(False)
         return model
 
     # https://github.com/openai/CLIP/issues/83
@@ -170,7 +177,7 @@ class Align_CLIP(nn.Module):
             self.load_model(self.config.resume_model_path)
             start_iteration = self.current_iteration + 1
 
-        self.model = self.weight_mode(self.model, trainable=True)
+        self.model = self.weight_mode(self.model, trainable=True, probe=self.config.probe)
         self.model.train()
         self.convert_models_to_fp32(self.model)
 
@@ -347,7 +354,7 @@ class Align_CLIP(nn.Module):
                 self.save_model(self.model, self.optimizer, best=False)
                 self.test_during_train() # saves the model again if it's best here
 
-                self.model = self.weight_mode(self.model, trainable=True)
+                self.model = self.weight_mode(self.model, trainable=True, probe=self.config.probe)
                 self.model.train()
                 self.convert_models_to_fp32(self.model)
 
@@ -446,12 +453,13 @@ def configuration_params():
 
     parser.add_argument('--network_type', type=str, default= 'clip', choices=['clip', 'modified_clip'])
     parser.add_argument('--layer_type_for_modified_clip', type=str, default= 'linear', choices=['mlp', 'linear'])
+    parser.add_argument('--probe', type=bool, default=False)
 
     config = parser.parse_args()
     return config
 
 
-def train_clip_align_simultaneously(run_dir, mode, learning_rate, include_classtext_in_image_training = False, epochs = 10, background_consider=False):
+def train_clip_align_simultaneously(run_dir, mode, learning_rate, include_classtext_in_image_training = False, epochs = 10, background_consider=False, network_type='clip', layer_type_for_modified_clip='linear', probe=False):
     config = configuration_params()
     config.llava_out_dir = run_dir
     config.results_dir = run_dir
@@ -461,6 +469,9 @@ def train_clip_align_simultaneously(run_dir, mode, learning_rate, include_classt
     config.epochs = epochs
     config.test_epochs = (epochs * 1.0) / 10.0
     config.background_consider = background_consider
+    config.network_type = network_type
+    config.layer_type_for_modified_clip = layer_type_for_modified_clip
+    config.probe = probe
     scratch_dir = os.getenv("SCRATCH")
     img_dir = scratch_dir + '/datasets'
     model = Align_CLIP(model_type=config.model_type, dataset='waterbirds', text_classes=['waterbird', 'landbird'], bg_classes= ['water', 'land'], img_dir=img_dir, config=config)

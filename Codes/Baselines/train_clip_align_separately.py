@@ -48,7 +48,7 @@ class Align_CLIP_Separately(nn.Module):
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         self.model, self.preprocess = clip.load(model_type, device= self.device)
 
-        if self.config.network_type == 'clip_modified':
+        if self.config.network_type == 'modified_clip':
             self.model = CLIPCombinedModified(self.model, layer_type=self.config.layer_type_for_modified_clip)
 
         # Get text features
@@ -115,15 +115,15 @@ class Align_CLIP_Separately(nn.Module):
     @staticmethod
     def weight_mode(model, freeze_what = "text"): # freeze_what = "text" or "image" or "both"
         if freeze_what == "image":
-            for param in model.parameters():
-                if "visual" in param.name:
+            for pname, param in model.named_parameters():
+                if "visual" in pname:
                     param.requires_grad_(False)
                 else:
                     param.requires_grad_(True)
         
         elif freeze_what == "text":
-            for param in model.parameters():
-                if "visual" in param.name:
+            for pname, param in model.named_parametersparameters():
+                if "visual" in pname:
                     param.requires_grad_(True)
                 else:
                     param.requires_grad_(False)

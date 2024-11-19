@@ -6,6 +6,8 @@ import torch
 import torch.nn as nn
 import torch.nn.init as init
 
+import numpy as np
+
 # Throwaway doesn't make sense to me in train simultaneously case as the text_image_matching is not decoupled
 # Like if we train the 2 throwaway layers at the same time, it won't make sense
 # But in separate training case it does?
@@ -56,19 +58,21 @@ class TextCLIPModified(nn.Module):
         self.clip_model = clip_model
         self.layer_type = layer_type
 
+        enc_dim = self.clip_model.transformer.width
+
         if self.layer_type == "linear":
-            self.projection_head = nn.Linear(self.clip_model.transformer.shape[2], self.clip_model.transformer.shape[2])
+            self.projection_head = nn.Linear(enc_dim, enc_dim)
         elif self.layer_type == "mlp":
             self.projection_head = nn.Sequential(
-                nn.Linear(self.clip_model.transformer.shape[2], self.clip_model.transformer.shape[2]),
+                nn.Linear(enc_dim, enc_dim),
                 nn.ReLU(inplace=True),
-                nn.Linear(self.clip_model.transformer.shape[2], self.clip_model.transformer.shape[2])
+                nn.Linear(enc_dim, enc_dim)
             )
         elif self.layer_type == "throwaway":
             self.projection_head = nn.Sequential(
-                nn.Linear(self.clip_model.transformer.shape[2], self.clip_model.transformer.shape[2]),
+                nn.Linear(enc_dim, enc_dim),
                 nn.ReLU(inplace=True),
-                nn.Linear(self.clip_model.transformer.shape[2], 128)
+                nn.Linear(enc_dim, 128)
             )
         
         # Apply Xavier initialization to all Linear layers in the projection_head
@@ -94,7 +98,7 @@ class TextCLIPModified(nn.Module):
 
 class CLIPCombinedModified(nn.Module):
     def __init__(self, model, layer_type= "linear"):
-        super(ImageCLIPModified, self).__init__()
+        super().__init__()
         self.layer_type = layer_type
 
         self.model = model
@@ -115,3 +119,21 @@ class CLIPCombinedModified(nn.Module):
     
     def encode_text(self, x, throw_it=True):
         return self.text_model(x, throw_it)
+    
+    def forward(self, img, text):
+        image_features = self.encode_image(img)
+        text_features = self.encode_text(text)
+
+        # normalized features
+        image_features = image_features / image_features.norm(dim=1, keepdim=True)
+        text_features = text_features / text_features.norm(dim=1, keepdim=True)
+
+        # cosine similarity as logits
+        logit_scale = nn.Parameter(torch.ones([]) * np.log(1 / 0.07)).exp()
+
+        logits_per_image = logit_scale * image_features @ text_features.t()
+        logits_per_text = logits_per_image.t()
+
+        # shape = [global_batch_size, global_batch_size]
+        return logits_per_image, logits_per_text
+
