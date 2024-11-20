@@ -108,17 +108,17 @@ class Align_CLIP(nn.Module):
 
     # Makes a model's weights trainable/frozen
     @staticmethod
-    def weight_mode(model, trainable=True, probe=False):
-        if not probe:
-            for _, param in model.named_parameters():
-                if trainable:
+    def weight_mode(model, trainable=True, probe=False, network_type='clip'):
+        if network_type == 'modified_clip' and probe:
+            # print([name for name, _ in model.named_parameters()])
+            for name, param in model.named_parameters():
+                if trainable and ("projection_head" in name):
                     param.requires_grad_(True)
                 else:
                     param.requires_grad_(False)
         else:
-            # print([name for name, _ in model.named_parameters()])
-            for name, param in model.named_parameters():
-                if trainable and ("projection_head" in name):
+            for _, param in model.named_parameters():
+                if trainable:
                     param.requires_grad_(True)
                 else:
                     param.requires_grad_(False)
@@ -177,7 +177,7 @@ class Align_CLIP(nn.Module):
             self.load_model(self.config.resume_model_path)
             start_iteration = self.current_iteration + 1
 
-        self.model = self.weight_mode(self.model, trainable=True, probe=self.config.probe)
+        self.model = self.weight_mode(self.model, trainable=True, probe=self.config.probe, network_type=self.config.network_type)
         self.model.train()
         self.convert_models_to_fp32(self.model)
 
@@ -354,7 +354,7 @@ class Align_CLIP(nn.Module):
                 self.save_model(self.model, self.optimizer, best=False)
                 self.test_during_train() # saves the model again if it's best here
 
-                self.model = self.weight_mode(self.model, trainable=True, probe=self.config.probe)
+                self.model = self.weight_mode(self.model, trainable=True, probe=self.config.probe, network_type=self.config.network_type)
                 self.model.train()
                 self.convert_models_to_fp32(self.model)
 
