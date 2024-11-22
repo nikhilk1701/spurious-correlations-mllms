@@ -82,6 +82,35 @@ def calculate_class_pred_accuracy(text_class_order, gt_labels, scores, binary=Fa
 
     return accuracy, class_accuracy
 
+def calculate_4class_pred_accuracy(dataset, scores, class_order):
+    total_counts = {
+        "waterbird": { "land": 0, "water": 0, },
+        "landbird": { "land": 0, "water": 0, },
+    }
+    correct_counts = {
+        "waterbird": { "land": 0, "water": 0, },
+        "landbird": { "land": 0, "water": 0, },
+    }
+    for datapoint, score in zip(dataset, scores):
+        guess = class_order[0] if score[0] > score[1] else class_order[1]
+
+        gt_label = datapoint['label']
+        gt_place = datapoint['place']
+
+        if guess == gt_label:
+            correct_counts[guess][gt_place] += 1
+        
+        total_counts[gt_label][gt_place] += 1
+    
+    accuracy = { }
+
+    for gt_class in ["waterbird", "landbird"]:
+        accuracy[gt_class] = {}
+        for place in ["water", "land"]:
+            if total_counts[gt_class][gt_place] != 0:
+                accuracy[gt_class][place] = (correct_counts[gt_class][place] * 1.0) / total_counts[gt_class][gt_place]
+    return accuracy
+
 def main():
     text = ["waterbird", "landbird"]
     dataset = "waterbirds"
@@ -92,12 +121,13 @@ def main():
 
     model, preprocess, text_inputs, device = load_model(model_type, text)
     read_dataset = get_organized_dataset(base_dataset_path=Path(img_dir), dataset_name=dataset, dataset_split='test')
-    loaded_dataset = CLIPDataloader(clip_transform= preprocess, learning_data= read_dataset)
+    loaded_dataset = CLIPDataloader(clip_transform= preprocess, learning_data= read_dataset, clip_tokenizer=clip.tokenize)
     loader = torch.utils.data.DataLoader(loaded_dataset, batch_size=32, shuffle=False)
     
     img_name, gt_labels, scores = clip_inference(model, text_inputs, loader, device)
     save_to_csv(model_type.split("/")[0], dataset, save_path, img_name, gt_labels, scores)
     accuracy, class_accuracy = calculate_class_pred_accuracy(text, gt_labels, scores)
+    calculate_4class_pred_accuracy(read_dataset, scores, text)
 
     print(f"Overall Accuracy: {accuracy}")
     for class_name, accuracy in class_accuracy.items():

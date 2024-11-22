@@ -23,6 +23,10 @@ def get_dataset_list(base_dataset_path: Path, dataset: str):
         label_place_match_count_val = 0
         label_place_match_count_test = 0
 
+        n_train = 0
+        n_test = 0
+        n_val = 0
+
         for (_name, _label, _split, _place) in zip(filenames, gt_labels, ttv_split, places):
             dataset_entry = {}
 
@@ -42,10 +46,13 @@ def get_dataset_list(base_dataset_path: Path, dataset: str):
             # get test train split
             if int(_split) == 0:
                 dataset_entry['split'] = "train"
+                n_train += 1
             elif int(_split) == 1:
                 dataset_entry['split'] = "val"
+                n_val += 1
             elif int(_split) == 2:
                 dataset_entry['split'] = "test"
+                n_test += 1
             
             # get place
             if int(_place) == 0:
@@ -67,9 +74,9 @@ def get_dataset_list(base_dataset_path: Path, dataset: str):
         print("number of datasets: ", len(datasets))
 
         # print num of train, test, val images
-        print("Count of images in train where label (land/water) and place (land/water) match: ", label_place_match_count_train)
-        print("Count of images in test where label (land/water) and place (land/water) match: ", label_place_match_count_test)
-        print("Count of images in val where label (land/water) and place (land/water) match: ", label_place_match_count_val)
+        print("Count of images in train where label (land/water) and place (land/water) match: ", label_place_match_count_train, "number of sample where they dont match:", n_train - label_place_match_count_train)
+        print("Count of images in test where label (land/water) and place (land/water) match: ", label_place_match_count_test, "number of sample where they dont match:", n_test - label_place_match_count_test)
+        print("Count of images in val where label (land/water) and place (land/water) match: ", label_place_match_count_val, "number of sample where they dont match:", n_val - label_place_match_count_val)
     return datasets
 
 def get_dataset_list_auxillary(base_dataset_path: Path, dataset: str, llava_outdir: str):
@@ -95,5 +102,10 @@ def get_dataset_list_auxillary(base_dataset_path: Path, dataset: str, llava_outd
             ques = json.loads(qline)
             ans = json.loads(aline)
             dataset_dict[ques['image']]['object_text'] = ans['text']
+
+    for key in dataset_dict:
+        val = dataset_dict[key]
+        if 'object_text' in val and 'bground_text' in val:
+            dataset_dict[key]['obj_bg_concat_txt'] = val['object_text'] + val['bground_text']
 
     return [val for val in list(dataset_dict.values()) if 'object_text' in val and 'bground_text' in val]

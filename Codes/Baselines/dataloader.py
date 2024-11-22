@@ -70,4 +70,7 @@ class CLIPDataloader(torch.utils.data.Dataset):
         if 'object_text' in datapoint:
             object_text = datapoint['object_text']
             single_sample['object_text'] = self.tokenizer(object_text, 77, True)
+        if 'obj_bg_concat_txt' in datapoint:
+            obj_bg_concat_txt = datapoint['obj_bg_concat_txt']
+            single_sample['obj_bg_concat_txt'] = self.tokenizer(obj_bg_concat_txt, 77, True)
         return single_sample

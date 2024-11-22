@@ -181,6 +181,7 @@ class Align_CLIP(nn.Module):
         self.model.train()
         self.convert_models_to_fp32(self.model)
 
+        loss_total = SupervisedContrastiveLoss(temperature= self.config.temperature, base_temperature= self.config.base_temperature, contrast_mode= "all")
         if self.config.mode == 'text_image_concat_no_bg':
             loss_total = SupervisedContrastiveLoss(temperature= self.config.temperature, base_temperature= self.config.base_temperature, contrast_mode= "all")
         elif self.config.mode == 'separate_text_image':
@@ -201,6 +202,7 @@ class Align_CLIP(nn.Module):
             gt_label_image_text = sampled_batch['label']
             obj_text_description = sampled_batch['object_text'].squeeze()
             background_text_description = sampled_batch['bground_text']
+            obj_bg_concat_txt = sampled_batch['obj_bg_concat_txt']
             gt_label_background = sampled_batch['place']
 
             if self.config.background_consider == False:
@@ -230,7 +232,6 @@ class Align_CLIP(nn.Module):
                 logits = torch.cat((logits_image, logits_text), dim=0) # bs + bs+2 * 1024
                 labels_image_text = torch.cat((gt_label_batch, gt_label_text), dim=0) # bs + bs+2
                 loss = loss_total(logits, labels_image_text)
-            
 
             elif self.config.mode == 'yu_yang_mitigating':
                 images = images.to(self.device) # bs
@@ -324,9 +325,8 @@ class Align_CLIP(nn.Module):
             # We are just matching all waterbirds on water images to other waterbirds on water images. And we are matching the text descriptions of all waterbirds on water images to text descriptions from other waterbirds on water images.
             elif self.config.mode == 'separate_text_image_yes_bg_4classes':
                 # add background classes to classnames to create 4 different strings of classes
-                new_classes = np.array(self.text_classes)[:, None] + np.array(self.bg_classes) # converting to numpy column vector to do broadcasting
-                class_to_index = {cls: idx for idx, cls in enumerate(new_classes.flatten())} # gives 4 classes
-
+                new_classes = [ obj_class + bg_class for obj_class in self.text_classes for bg_class in self.bg_classes ]
+                class_to_index = {cls: idx for idx, cls in enumerate(new_classes)} # gives 4 classes
                 class_names_of_sample = np.char.add(gt_label_image_text, gt_label_background) # bs # this does elementwise string addition so if it's waterbird and water then waterbirdwater
                 gt_label_batch = torch.tensor([class_to_index[label] for label in class_names_of_sample], device=self.device).unsqueeze(1) # bs
 
@@ -334,6 +334,18 @@ class Align_CLIP(nn.Module):
                 # REST OF THIS HAS TO BE FILLED IN
                 ##########################################################
 
+                images = images.to(self.device)
+                texts = obj_bg_concat_txt.to(self.device).squeeze(dim=1)
+
+                image_encodings = self.model.encode_image(images) # bs * h_dim
+                text_encodings = self.model.encode_text(texts) # bs * h_dim
+
+                gt_label_image = gt_label_batch # bs * 1
+                gt_label_text = gt_label_batch # bs * 1
+
+                encodings = torch.cat((image_encodings, text_encodings), dim=0) # (bs + bs) * h_dim
+                labels = torch.cat((gt_label_image, gt_label_text), dim=0) # (bs + bs) * 1
+                loss = loss_total(encodings, labels)
 
             self.optimizer.zero_grad()
             loss.backward()
@@ -375,6 +387,7 @@ class Align_CLIP(nn.Module):
         self.test_dict['csv']['GT'] = gt_labels
 
         accuracy, class_accuracy = calculate_class_pred_accuracy(self.text_classes, gt_labels, scores)
+        subclass_accuracy = calculate_4class_pred_accuracy(self.test_data, scores, self.text_classes)
 
         self.test_dict['csv'][f'pred{self.current_iteration:04}'].append(accuracy)
         self.test_dict['csv']['Image_Name'].append('Accuracy')
@@ -391,6 +404,11 @@ class Align_CLIP(nn.Module):
         for class_name, accuracy in class_accuracy.items():
             print(f"{class_name} Accuracy: {accuracy}")
             logging.info(f"{class_name} Accuracy: {accuracy}")
+        
+        for c_name, c_acc in subclass_accuracy.items():
+            for subc_name, subc_acc in c_acc.items():
+                print(f"{c_name} on {subc_name} background accuracy: {subc_acc}")
+                logging.info(f"{c_name} on {subc_name} background accuracy: {subc_acc}")
 
         # Saving test performance to disk
         if not os.path.exists((Path(self.config.results_dir) / 'Test').as_posix()):
