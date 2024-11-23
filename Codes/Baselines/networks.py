@@ -29,27 +29,30 @@ class ImageCLIPModified(nn.Module):
 
         if self.layer_type == "linear":
             self.projection_head = nn.Linear(self.clip_model.visual.output_dim, self.clip_model.visual.output_dim)
-        elif self.layer_type == "mlp":
+        if self.layer_type == "mlp":
             self.projection_head = nn.Sequential(
                 nn.Linear(self.clip_model.visual.output_dim, self.clip_model.visual.output_dim),
                 nn.ReLU(inplace=True),
                 nn.Linear(self.clip_model.visual.output_dim, self.clip_model.visual.output_dim)
             )
-        
-        # Apply Xavier initialization to all Linear layers in the projection_head
-        if isinstance(self.projection_head, nn.Linear):
-            xavier_init(self.projection_head)
-        elif isinstance(self.projection_head, nn.Sequential):
-            for module in self.projection_head:
-                if isinstance(module, nn.Linear):
-                    xavier_init(module)
+
+        # if there is a projection head do this
+        if self.layer_type != "none":
+            # Apply Xavier initialization to all Linear layers in the projection_head
+            if isinstance(self.projection_head, nn.Linear):
+                xavier_init(self.projection_head)
+            elif isinstance(self.projection_head, nn.Sequential):
+                for module in self.projection_head:
+                    if isinstance(module, nn.Linear):
+                        xavier_init(module)
     
     def forward(self, x):
-    
         clip_image_features = self.clip_model.encode_image(x)
-        clip_image_features = self.projection_head(clip_image_features)
-        
-        return clip_image_features
+        if self.layer_type == "none":
+            return clip_image_features
+        else:
+            clip_image_features = self.projection_head(clip_image_features)
+            return clip_image_features
     
 
 class TextCLIPModified(nn.Module):
@@ -76,18 +79,24 @@ class TextCLIPModified(nn.Module):
             )
         
         # Apply Xavier initialization to all Linear layers in the projection_head
-        if isinstance(self.projection_head, nn.Linear):
-            xavier_init(self.projection_head)
-        elif isinstance(self.projection_head, nn.Sequential):
-            for module in self.projection_head:
-                if isinstance(module, nn.Linear):
-                    xavier_init(module)
+        # if there is a projection head do this
+        if self.layer_type != "none":
+            # Apply Xavier initialization to all Linear layers in the projection_head
+            if isinstance(self.projection_head, nn.Linear):
+                xavier_init(self.projection_head)
+            elif isinstance(self.projection_head, nn.Sequential):
+                for module in self.projection_head:
+                    if isinstance(module, nn.Linear):
+                        xavier_init(module)
     
     def forward(self, x, throw_it):
         if self.layer_type != "throwaway":
             clip_text_features = self.clip_model.encode_text(x)
-            clip_text_features = self.projection_head(clip_text_features)
-            return clip_text_features
+            if self.layer_type == "none":
+                return clip_text_features
+            else:
+                clip_text_features = self.projection_head(clip_text_features)
+                return clip_text_features
         else:
             if throw_it:
                 clip_text_features = self.clip_model.encode_text(x)
@@ -97,21 +106,15 @@ class TextCLIPModified(nn.Module):
     
 
 class CLIPCombinedModified(nn.Module):
-    def __init__(self, model, layer_type= "linear"):
-        super().__init__()
-        self.layer_type = layer_type
+    def __init__(self, model, layer_type_image= "linear", layer_type_text= "linear"):
+        super(CLIPCombinedModified, self).__init__()
+        self.layer_type_image = layer_type_image
+        self.layer_type_text = layer_type_text
 
         self.model = model
 
-        if self.layer_type == "linear":
-            self.visual = ImageCLIPModified(self.model, self.layer_type)
-            self.text_model = TextCLIPModified(self.model, self.layer_type)
-        elif self.layer_type == "mlp":
-            self.visual = ImageCLIPModified(self.model, self.layer_type)
-            self.text_model = TextCLIPModified(self.model, self.layer_type)
-        elif self.layer_type == "throwaway":
-            self.visual = ImageCLIPModified(self.model, self.layer_type)
-            self.text_model = TextCLIPModified(self.model, self.layer_type)
+        self.visual = ImageCLIPModified(self.model, self.layer_type_image)
+        self.text_model = TextCLIPModified(self.model, self.layer_type_text)
 
     # Setting the defaults for inference as True as don't want to change the eval function files also
     def encode_image(self, x):

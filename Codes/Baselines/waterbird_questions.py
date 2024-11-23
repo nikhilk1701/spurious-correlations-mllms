@@ -17,6 +17,7 @@ def generate_questions(dataset_split, results_dir, per_class_count = 500):
     scratch_dir = os.getenv("SCRATCH")
     img_dir = scratch_dir + '/datasets'
 
+    # getting just the train set here 
     dataset = get_organized_dataset(base_dataset_path=Path(img_dir), dataset_name=dataset_name, dataset_split=dataset_split)
 
     questions_object = []
@@ -46,30 +47,37 @@ def generate_questions(dataset_split, results_dir, per_class_count = 500):
         question_bground["text"] = "Describe the background in the image, ignore the bird. Be concise."
         question_object["text"] = "Identify the bird in the image and describe distinguishing features of the bird in the image. Ignore the background, be concise."
         
-
-        if image_class == "waterbird" and background == "land" and wblb < per_class_count:
+        # indicates that it is the entire dataset as -1 indicates end right
+        if per_class_count == -1: 
             questions_bground.append(question_bground)
             questions_object.append(question_object)
-            wblb += 1
             question_id += 1
 
-        if image_class == "waterbird" and background == "water" and wbwb < per_class_count:
-            questions_bground.append(question_bground)
-            questions_object.append(question_object)
-            wbwb += 1
-            question_id += 1
-        
-        if image_class == "landbird" and background == "land" and lblb < per_class_count:
-            questions_bground.append(question_bground)
-            questions_object.append(question_object)
-            lblb += 1
-            question_id += 1
-        
-        if image_class == "landbird" and background == "water" and lbwb < per_class_count:
-            questions_bground.append(question_bground)
-            questions_object.append(question_object)
-            lbwb += 1
-            question_id += 1
+        # When we specify some balanced subset of the dataset
+        else:
+            if image_class == "waterbird" and background == "land" and wblb < per_class_count:
+                questions_bground.append(question_bground)
+                questions_object.append(question_object)
+                wblb += 1
+                question_id += 1
+
+            if image_class == "waterbird" and background == "water" and wbwb < per_class_count:
+                questions_bground.append(question_bground)
+                questions_object.append(question_object)
+                wbwb += 1
+                question_id += 1
+            
+            if image_class == "landbird" and background == "land" and lblb < per_class_count:
+                questions_bground.append(question_bground)
+                questions_object.append(question_object)
+                lblb += 1
+                question_id += 1
+            
+            if image_class == "landbird" and background == "water" and lbwb < per_class_count:
+                questions_bground.append(question_bground)
+                questions_object.append(question_object)
+                lbwb += 1
+                question_id += 1
 
     with open(f"{results_dir}/questions_bground.jsonl", 'a') as questions_file:
         for question in questions_bground:

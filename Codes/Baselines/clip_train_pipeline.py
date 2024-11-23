@@ -19,6 +19,7 @@ train_clip_align_simultaneously(
     learning_rate=1e-6,
     include_classtext_in_image_training=True,
     network_type='clip',
-    layer_type_for_modified_clip='mlp',
+    text_layer_type_for_modified_clip='mlp',
+    image_layer_type_for_modified_clip='mlp',
     probe=True,
 )

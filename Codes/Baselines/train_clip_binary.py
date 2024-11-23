@@ -83,25 +83,17 @@ class Train_CLIP_Binary(nn.Module):
 
     # Initialize dataloaders
     def init_dataloaders(self):
-        self.train_data, self.val_data, self.test_data = get_organized_dataset(self.img_dir, self.dataset, "all")
-        
-        finetune_data = []
-        cnt = 0
-        for input in self.train_data:
-            if len(finetune_data) < 50 and input['label'] == "landbird":
-                finetune_data.append(input)
-        for input in self.train_data:
-            if len(finetune_data) < 100 and input['label'] == "waterbird":
-                finetune_data.append(input)
-        self.train_data = finetune_data
-        
-        train_dataset = CLIPDataloader(clip_transform= self.preprocess, learning_data= finetune_data)
+
+        self.train_data = get_organized_dataset(self.img_dir, self.dataset, "train")
+        self.test_data = get_organized_dataset(self.img_dir, self.dataset, "test")
+
+        train_dataset = CLIPDataloader(clip_transform= self.preprocess, clip_tokenizer=clip.tokenize, learning_data= self.train_data)
         self.train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=self.config.batch_size, pin_memory=True, num_workers=self.config.num_gpu_workers, shuffle=True)
 
-        val_dataset = CLIPDataloader(clip_transform= self.preprocess, learning_data= self.val_data)
-        self.val_loader = torch.utils.data.DataLoader(val_dataset, batch_size=self.config.batch_size, pin_memory=True, num_workers=self.config.num_gpu_workers, shuffle=False)
+        # val_dataset = CLIPDataloader(clip_transform= self.preprocess, clip_tokenizer=clip.tokenize, learning_data= self.val_data)
+        # self.val_loader = torch.utils.data.DataLoader(val_dataset, batch_size=self.config.batch_size, pin_memory=True, num_workers=self.config.num_gpu_workers, shuffle=False)
 
-        test_dataset = CLIPDataloader(clip_transform= self.preprocess, learning_data= self.test_data)
+        test_dataset = CLIPDataloader(clip_transform= self.preprocess, clip_tokenizer=clip.tokenize, learning_data= self.test_data)
         self.test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=self.config.batch_size, pin_memory=True, num_workers=self.config.num_gpu_workers, shuffle=False)
         return
 
@@ -254,9 +246,9 @@ class Train_CLIP_Binary(nn.Module):
         print(f"Overall Accuracy: {accuracy}")
         logging.info(f"Overall Accuracy: {accuracy}")
 
-        for class_name, accuracy in class_accuracy.items():
-            print(f"{class_name} Accuracy: {accuracy}")
-            logging.info(f"{class_name} Accuracy: {accuracy}")
+        for class_name, class_acc in class_accuracy.items():
+            print(f"{class_name} Accuracy: {class_acc}")
+            logging.info(f"{class_name} Accuracy: {class_acc}")
 
         # Saving test performance to disk
         if not os.path.exists((Path(self.config.results_dir) / 'Test').as_posix()):
@@ -300,9 +292,9 @@ def configuration_params():
     results_dir =  os.getenv("SCRATCH") + '/results/Train'
 
     parser.add_argument('--batch_size', type=int, default=32)
-    parser.add_argument('--epochs', type=int, default=2)
-    parser.add_argument('--test_epochs', type=int, default=0.2)
-    parser.add_argument('--learning_rate', type=float, default=5e-5)
+    parser.add_argument('--epochs', type=int, default=8)
+    parser.add_argument('--test_epochs', type=int, default=1)
+    parser.add_argument('--learning_rate', type=float, default=1e-7)
     parser.add_argument('--num_gpu_workers', type=int, default=1)
     parser.add_argument('--weight_decay', type=float, default=0.2)
     parser.add_argument('--resume_training', type=bool, default=False)

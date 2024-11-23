@@ -49,7 +49,8 @@ class Align_CLIP_Separately(nn.Module):
         self.model, self.preprocess = clip.load(model_type, device= self.device)
 
         if self.config.network_type == 'modified_clip':
-            self.model = CLIPCombinedModified(self.model, layer_type=self.config.layer_type_for_modified_clip)
+            self.model = CLIPCombinedModified(self.model, layer_type_image= self.config.image_layer_type_for_modified_clip, layer_type_text= self.config.text_layer_type_for_modified_clip)
+        self.model = self.model.to(self.device)
 
         # Get text features
         self.tokenized_text_inputs = torch.cat([clip.tokenize(f"a photo of a {c}.") for c in text_classes]).to(self.device)
@@ -58,8 +59,8 @@ class Align_CLIP_Separately(nn.Module):
         text_optimizable_params = [param for name, param in self.model.named_parameters() if 'visual' not in name]
         visual_optimizable_params = [param for name, param in self.model.named_parameters() if 'visual' in name]
         if self.config.optimizer == 'adam':
-            self.optimizer_text = Adam(text_optimizable_params, weight_decay=self.config.weight_decay, betas=(0.9,0.98), eps=1e-6, lr=self.config.learning_rate)
-            self.optimizer_visual = Adam(visual_optimizable_params, weight_decay=self.config.weight_decay, betas=(0.9,0.98), eps=1e-6, lr=self.config.learning_rate)
+            self.optimizer_text = Adam(text_optimizable_params, weight_decay=self.config.weight_decay, betas=(0.9,0.98), eps=1e-6, lr=self.config.learning_rate_text)
+            self.optimizer_visual = Adam(visual_optimizable_params, weight_decay=self.config.weight_decay, betas=(0.9,0.98), eps=1e-6, lr=self.config.learning_rate_image)
 
         self.test_dict = {}
         self.test_acc = {'iteration': [], 'acc': []}
@@ -122,7 +123,7 @@ class Align_CLIP_Separately(nn.Module):
                     param.requires_grad_(True)
         
         elif freeze_what == "text":
-            for pname, param in model.named_parametersparameters():
+            for pname, param in model.named_parameters():
                 if "visual" in pname:
                     param.requires_grad_(True)
                 else:
@@ -343,19 +344,19 @@ class Align_CLIP_Separately(nn.Module):
 
             # convert gt_label_img_text_vector to 0 or 1 based on classname waterbird =0, landbird = 1
             class_to_index = {cls: idx for idx, cls in enumerate(self.text_classes)}
-            gt_og_input_text = torch.tensor([class_to_index[label] for label in self.text_classes], device=self.device).unsqueeze(1) # 2
-            gt_label_batch = torch.tensor([class_to_index[label] for label in gt_label_image_text], device=self.device).unsqueeze(1) # bs
+            gt_og_input_text = torch.tensor([class_to_index[label] for label in self.text_classes], device=self.device) # 2
+            gt_label_batch = torch.tensor([class_to_index[label] for label in gt_label_image_text], device=self.device) # bs
 
             # convert images to column vector
             images = images.to(self.device) # bs
             logits_image = self.model.encode_image(images) # bs * 1024
             logits_image = logits_image.unsqueeze(1) # bs * 1 * 1024
             gt_label_image = gt_label_batch.unsqueeze(1) # bs * 1
+            obj_text_description = obj_text_description.to(self.device) # bs
 
             # Here in this case we include the text classes "waterbird" and "landbird" in the image training
             if self.config.include_classtext_in_image_training == True:
 
-                obj_text_description = obj_text_description.to(self.device) # bs
                 # now concatenate the "waterbird" and "landbird" text vectors to text_description and also create it's corresponding labels
                 texts = torch.cat((self.tokenized_text_inputs, obj_text_description), dim=0).to(self.device) # bs+2
                 gt_label_text = torch.cat((gt_og_input_text, gt_label_batch), dim=0).to(self.device) # bs+2
@@ -373,7 +374,7 @@ class Align_CLIP_Separately(nn.Module):
                 logits_text = self.helper_encode_text(obj_text_description, throw_it= True).unsqueeze(0) # 1 * bs * 1024
                 logits_text = logits_text.repeat(logits_text.shape[1], 1, 1) # bs * bs* 1024
                 gt_label_text = gt_label_batch.unsqueeze(0) #  1 * bs
-                gt_label_text = gt_label_text.repeat(gt_label_text.shape[1], 1, 1)
+                gt_label_text = gt_label_text.repeat(gt_label_text.shape[1], 1)
 
             # concatenate the image and text features and their label vectors too to get 16*19*1024 or 16*17*1024
             logits = torch.cat((logits_image, logits_text), dim=1) # bs* bs+3 * 1024 or bs* bs+1 * 1024
@@ -406,7 +407,7 @@ class Align_CLIP_Separately(nn.Module):
 
             self.image_current_iteration += 1
 
-            del sampled_batch, images, texts
+            del sampled_batch, images
             torch.cuda.empty_cache()
 
         return
@@ -422,6 +423,7 @@ class Align_CLIP_Separately(nn.Module):
         self.test_dict['csv']['GT'] = gt_labels
 
         accuracy, class_accuracy = calculate_class_pred_accuracy(self.text_classes, gt_labels, scores)
+        subclass_accuracy = calculate_4class_pred_accuracy(self.test_data, scores, self.text_classes)
 
         self.test_dict['csv'][f'pred{iteration:04}'].append(accuracy)
         self.test_dict['csv']['Image_Name'].append('Accuracy')
@@ -438,6 +440,11 @@ class Align_CLIP_Separately(nn.Module):
         for class_name, accuracy in class_accuracy.items():
             print(f"{class_name} Accuracy: {accuracy}")
             logging.info(f"{class_name} Accuracy: {accuracy}")
+        
+        for c_name, c_acc in subclass_accuracy.items():
+            for subc_name, subc_acc in c_acc.items():
+                print(f"{c_name} on {subc_name} background accuracy: {subc_acc}")
+                logging.info(f"{c_name} on {subc_name} background accuracy: {subc_acc}")
 
         # Saving test performance to disk
         if not os.path.exists((Path(self.config.results_dir) / 'Test').as_posix()):
@@ -475,7 +482,7 @@ class Align_CLIP_Separately(nn.Module):
         elif model_flag == "text":
             if len(self.test_acc['acc']) > 0:
                 if accuracy > max(self.test_acc['acc']):
-                    self.save_model_image(self.model, self.optimizer_text, best=True)
+                    self.save_model_text(self.model, self.optimizer_text, best=True)
 
         self.test_acc['acc'].append(accuracy)
         self.test_acc['iteration'].append(iteration)
@@ -488,10 +495,11 @@ def configuration_params():
     results_dir = scratch_dir + '/results/Train'
 
     parser.add_argument('--batch_size', type=int, default=32)
-    parser.add_argument('--train_text_epochs', type=int, default=5)
-    parser.add_argument('--train_image_epochs', type=int, default=5)
-    parser.add_argument('--test_epochs', type=int, default=0.2)
-    parser.add_argument('--learning_rate', type=float, default=5e-5)
+    parser.add_argument('--train_text_epochs', type=int, default=10)
+    parser.add_argument('--train_image_epochs', type=int, default=6)
+    parser.add_argument('--test_epochs', type=int, default=1)
+    parser.add_argument('--learning_rate_text', type=float, default=1e-5)
+    parser.add_argument('--learning_rate_image', type=float, default=1e-7)
     parser.add_argument('--num_gpu_workers', type=int, default=1)
     parser.add_argument('--weight_decay', type=float, default=0.2)
     parser.add_argument('--resume_training', type=bool, default=False)
@@ -499,7 +507,8 @@ def configuration_params():
     parser.add_argument('--model_type', type=str, default='ViT-B/32', choices=['ViT-B/32', 'ViT-B/16', 'ViT-L/14', 'ViT-L/14@336px'])
     parser.add_argument('--optimizer', type=str, default='adam', choices=['adam', 'SGD'])
     parser.add_argument('--network_type', type=str, default= 'clip', choices=['clip', 'modified_clip'])
-    parser.add_argument('--layer_type_for_modified_clip', type=str, default= 'linear', choices=['mlp', 'linear', 'throwaway'])
+    parser.add_argument('--text_layer_type_for_modified_clip', type=str, default= 'linear', choices=['mlp', 'linear', 'throwaway', 'none'])
+    parser.add_argument('--image_layer_type_for_modified_clip', type=str, default= 'linear', choices=['mlp', 'linear', 'none'])
     
     parser.add_argument('--background_consider', type=bool, default=False)
     parser.add_argument('--include_classtext_in_image_training', type=bool, default=False)
@@ -512,11 +521,12 @@ def configuration_params():
     return config
 
 
-def train_clip_align_separately(run_dir, learning_rate, include_classtext_in_image_training = False, background_consider=False):
+def train_clip_align_separately(run_dir, learning_rate_text, learning_rate_image, include_classtext_in_image_training = False, background_consider=False):
     config = configuration_params()
     config.llava_out_dir = run_dir
     config.results_dir = run_dir
-    config.learning_rate = learning_rate
+    config.learning_rate_text = learning_rate_text
+    config.learning_rate_image = learning_rate_image
     config.include_classtext_in_image_training = include_classtext_in_image_training
     config.background_consider = background_consider
     scratch_dir = os.getenv("SCRATCH")

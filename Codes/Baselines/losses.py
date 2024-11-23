@@ -107,7 +107,7 @@ class BatchedSupervisedContrastiveLoss(nn.Module):
         # compute logits
         if self.contrast_mode == 'one':
             anchor_feature = features[:, 0, :].unsqueeze(1) # taking the first feature vector as anchor [16, 1, 1024]
-            mask = mask[:, 0, :].unsqueeze(0) # taking the first mask [16, 1, 17]
+            mask = mask[:, 0, :].unsqueeze(1) # taking the first mask [16, 1, 17]
         elif self.contrast_mode == 'all':
             anchor_feature = features
         
@@ -128,12 +128,12 @@ class BatchedSupervisedContrastiveLoss(nn.Module):
 
         # compute log_prob
         exp_logits = torch.exp(logits) * logits_mask # [16, 17, 17]
-        log_prob = logits - torch.log(exp_logits.sum(1, keepdim=True)) # [16, 17, 17]
+        log_prob = logits - torch.log(exp_logits.sum(2, keepdim=True)) # [16, 17, 17]
 
         # compute mean of log-likelihood over positive
-        mask_pos_pairs = mask.sum(1) 
-        mask_pos_pairs = torch.where(mask_pos_pairs < 1e-6, 1, mask_pos_pairs)
-        mean_log_prob_pos = (mask * log_prob).sum(1) / mask_pos_pairs
+        mask_pos_pairs = mask.sum(2) 
+        mask_pos_pairs = torch.where(mask_pos_pairs == 0, 1, mask_pos_pairs)
+        mean_log_prob_pos = (mask * log_prob).sum(2) / mask_pos_pairs
 
         # loss
         loss = - (self.temperature / self.base_temperature) * mean_log_prob_pos

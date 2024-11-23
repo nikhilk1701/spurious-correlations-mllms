@@ -48,7 +48,8 @@ class Align_CLIP(nn.Module):
         self.model, self.preprocess = clip.load(model_type, device= self.device)
 
         if self.config.network_type == 'modified_clip':
-            self.model = CLIPCombinedModified(self.model, layer_type=self.config.layer_type_for_modified_clip)
+            self.model = CLIPCombinedModified(self.model, layer_type_image= self.config.image_layer_type_for_modified_clip, layer_type_text= self.config.text_layer_type_for_modified_clip)
+        self.model = self.model.to(self.device)
 
         # Get text features
         self.tokenized_text_inputs = torch.cat([clip.tokenize(f"a photo of a {c}.") for c in text_classes]).to(self.device)
@@ -161,6 +162,24 @@ class Align_CLIP(nn.Module):
         self.model = self.model.to(self.device)
         self.current_iteration = model_dict['current_iteration']
         return
+    
+    # Helper function
+    def helper_background_consider(self, gt_label_image_text, gt_label_background, bg_consider=False):
+        if bg_consider == False:
+            # convert gt_label_img_text_vector to 0 or 1 based on classname waterbird =0, landbird = 1
+            class_to_index = {cls: idx for idx, cls in enumerate(self.text_classes)}
+            gt_og_input_text = torch.tensor([class_to_index[label] for label in self.text_classes], device=self.device) # 2
+            gt_label_batch = torch.tensor([class_to_index[label] for label in gt_label_image_text], device=self.device) # bs
+            return gt_og_input_text, gt_label_batch
+
+        else:
+            # also consider the background text as 2 diferent classes according to water and land
+            class_to_index = {cls: idx for idx, cls in enumerate(self.text_classes + self.bg_classes)} # so 4 classes now
+            gt_og_input_text = torch.tensor([class_to_index[label] for label in self.text_classes], device=self.device) # 2
+            gt_label_batch_text_desc = torch.tensor([class_to_index[label] for label in gt_label_image_text], device=self.device) # bs
+            gt_label_batch_background = torch.tensor([class_to_index[label] for label in gt_label_background], device=self.device) # bs
+            return gt_og_input_text, gt_label_batch_text_desc, gt_label_batch_background
+
 
     def train_model(self):
         train_loss = []
@@ -205,22 +224,11 @@ class Align_CLIP(nn.Module):
             obj_bg_concat_txt = sampled_batch['obj_bg_concat_txt']
             gt_label_background = sampled_batch['place']
 
-            if self.config.background_consider == False:
-                # convert gt_label_img_text_vector to 0 or 1 based on classname waterbird =0, landbird = 1
-                class_to_index = {cls: idx for idx, cls in enumerate(self.text_classes)}
-                gt_og_input_text = torch.tensor([class_to_index[label] for label in self.text_classes], device=self.device).unsqueeze(1) # 2
-                gt_label_batch = torch.tensor([class_to_index[label] for label in gt_label_image_text], device=self.device).unsqueeze(1) # bs
-            else:
-                # also consider the background text as 2 diferent classes according to water and land
-                class_to_index = {cls: idx for idx, cls in enumerate(self.text_classes + self.bg_classes)} # so 4 classes now
-                gt_og_input_text = torch.tensor([class_to_index[label] for label in self.text_classes], device=self.device).unsqueeze(1) # 2
-                gt_label_batch_text_desc = torch.tensor([class_to_index[label] for label in gt_label_image_text], device=self.device).unsqueeze(1) # bs
-                gt_label_batch_background = torch.tensor([class_to_index[label] for label in gt_label_background], device=self.device).unsqueeze(1) # bs
-
 
             if self.config.mode == 'text_image_concat_no_bg':
                 images = images.to(self.device) # bs
                 logits_image = self.model.encode_image(images) # bs * 1024
+                gt_og_input_text, gt_label_batch = self.helper_background_consider(gt_label_image_text, gt_label_background, bg_consider=False)
                 
                 obj_text_description = obj_text_description.to(self.device) # bs
                 # now concatenate the "waterbird" and "landbird" text vectors to text_description and also create it's corresponding labels
@@ -235,7 +243,8 @@ class Align_CLIP(nn.Module):
 
             elif self.config.mode == 'yu_yang_mitigating':
                 images = images.to(self.device) # bs
-                logits_image = self.model.encode_image(images) # bs * 1024'
+                logits_image = self.model.encode_image(images) # bs * 1024
+                gt_og_input_text, gt_label_batch = self.helper_background_consider(gt_label_image_text, gt_label_background, bg_consider=False)
 
                 obj_text_description = obj_text_description.to(self.device) # bs
                 # now concatenate the "waterbird" and "landbird" text vectors to text_description and also create it's corresponding labels
@@ -258,41 +267,32 @@ class Align_CLIP(nn.Module):
                 ###################
                 # Image case
                 ###################
-                # image case is same for both models whether we consider background or not so writing that outside the background if
+                # image case just needs the gt_label_batch so calling the helper function as false here for image side
 
                 # convert images to column vector
                 images = images.to(self.device) # bs
                 logits_image = self.model.encode_image(images) # bs * 1024
                 logits_image = logits_image.unsqueeze(1) # bs * 1 * 1024
-                gt_label_image = gt_label_batch.unsqueeze(1) # bs * 1
 
+                gt_og_input_text, gt_label_batch = self.helper_background_consider(gt_label_image_text, gt_label_background, bg_consider=False)
+                gt_label_image = gt_label_batch.unsqueeze(1) # bs * 1 already unsqueezed previously
                 # Here in this case we include the text classes "waterbird" and "landbird" in the image training
-                if self.config.include_classtext_in_image_training == True:
+                obj_text_description = obj_text_description.to(self.device) # bs
 
-                    obj_text_description = obj_text_description.to(self.device) # bs
-                    # now concatenate the "waterbird" and "landbird" text vectors to text_description and also create it's corresponding labels
-                    texts = torch.cat((self.tokenized_text_inputs, obj_text_description), dim=0).to(self.device) # bs+2
-                    gt_label_text = torch.cat((gt_og_input_text, gt_label_batch), dim=0).to(self.device) # bs+2
-                    gt_label_text = gt_label_text.unsqueeze(0) # 1 * (bs+2)
-                    gt_label_text = gt_label_text.repeat(images.shape[0], 1, 1) # b * (bs + 2)
-                    logits_text = self.model.encode_text(texts) # bs+2 * 1024
-                    logits_text = logits_text.unsqueeze(0) # 1 * (bs+2) * 1024
-                    logits_text = logits_text.repeat(images.shape[0], 1, 1) # bs * (bs + 2) * 1024
+                # now concatenate the "waterbird" and "landbird" text vectors to text_description and also create it's corresponding labels
+                texts = torch.cat((self.tokenized_text_inputs, obj_text_description), dim=0).to(self.device) # bs+2
+                gt_label_text = torch.cat((gt_og_input_text, gt_label_batch), dim=0).to(self.device) # bs+2
+                gt_label_text = gt_label_text.unsqueeze(0) # 1 * (bs+2)
+                gt_label_text = gt_label_text.repeat(images.shape[0], 1) # b * (bs + 2)
+                logits_text = self.model.encode_text(texts) # bs+2 * 1024
+                logits_text = logits_text.unsqueeze(0) # 1 * (bs+2) * 1024
+                logits_text = logits_text.repeat(images.shape[0], 1, 1) # bs * (bs + 2) * 1024
 
-                # In this case we don't
-                else:
-                    logits_text = self.model.encode_text(obj_text_description).unsqueeze(0) # 1 * bs * 1024
-                    logits_text = logits_text.repeat(logits_text.shape[1], 1, 1) # bs * bs* 1024
-                    gt_label_text = gt_label_batch.unsqueeze(0) #  1 * bs
-                    gt_label_text = gt_label_text.repeat(gt_label_text.shape[1], 1, 1)
+                # Removing the else condition that was originally here as we aren't matching the text and classname and nor are we matching image and classname. So ultimately, this training doesn't make sense.
 
                 # concatenate the image and text features and their label vectors too to get 16*19*1024 or 16*17*1024
                 logits = torch.cat((logits_image, logits_text), dim=1) # bs* bs+3 * 1024 or bs* bs+1 * 1024
-                # print(logits_image.size())
-                # print(logits_text.size())
-                # print(logits.size())
                 labels_image_text = torch.cat((gt_label_image, gt_label_text), dim=1) # bs* bs+3 or bs* bs+1
-                # print(labels_image_text.size())
                 image_loss_term = loss_img(logits, labels_image_text)
 
                 
@@ -303,6 +303,7 @@ class Align_CLIP(nn.Module):
                 # in this case use only the object text description
                 if self.config.background_consider == False:
                     obj_text_description = obj_text_description.to(self.device) # bs
+                    gt_og_input_text, gt_label_batch = self.helper_background_consider(gt_label_image_text, gt_label_background, bg_consider=False)
                     # now concatenate the "waterbird" and "landbird" text vectors to text_description and also create it's corresponding labels
                     texts = torch.cat((self.tokenized_text_inputs, obj_text_description), dim=0).to(self.device) # bs+2
                     gt_label_text = torch.cat((gt_og_input_text, gt_label_batch), dim=0).to(self.device) # bs+2
@@ -312,6 +313,7 @@ class Align_CLIP(nn.Module):
                 # In this case the background is considered but the background text is negative to both the text classes
                 else:
                     obj_text_description = obj_text_description.to(self.device) # bs
+                    gt_og_input_text, gt_label_batch_text_desc, gt_label_batch_background = self.helper_background_consider(gt_label_image_text, gt_label_background, bg_consider=True)
                     background_text_description = background_text_description.to(self.device) # bs
                     texts = torch.cat((self.tokenized_text_inputs, obj_text_description, background_text_description), dim=0).to(self.device) # 2bs+2
                     gt_label_text = torch.cat((gt_og_input_text, gt_label_batch_text_desc, gt_label_batch_background), dim=0).to(self.device) # 2bs+2
@@ -340,11 +342,11 @@ class Align_CLIP(nn.Module):
                 image_encodings = self.model.encode_image(images) # bs * h_dim
                 text_encodings = self.model.encode_text(texts) # bs * h_dim
 
-                gt_label_image = gt_label_batch # bs * 1
-                gt_label_text = gt_label_batch # bs * 1
+                gt_label_image = gt_label_batch # bs
+                gt_label_text = gt_label_batch # bs
 
                 encodings = torch.cat((image_encodings, text_encodings), dim=0) # (bs + bs) * h_dim
-                labels = torch.cat((gt_label_image, gt_label_text), dim=0) # (bs + bs) * 1
+                labels = torch.cat((gt_label_image, gt_label_text), dim=0) # (bs + bs)
                 loss = loss_total(encodings, labels)
 
             self.optimizer.zero_grad()
@@ -466,29 +468,29 @@ def configuration_params():
     parser.add_argument('--base_temperature', type=float, default=0.07)
     parser.add_argument('--mode', type=str, default='separate_text_image', choices=['separate_text_image', 'text_image_concat_no_bg', 'yu_yang_mitigating', 'separate_text_image_yes_bg_4classes'])
     parser.add_argument('--background_consider', type=bool, default=False)
-    parser.add_argument('--include_classtext_in_image_training', type=bool, default=False)
     parser.add_argument('--llava_out_dir', type=str, default=f'{scratch_dir}/pipeline_results0000')
 
     parser.add_argument('--network_type', type=str, default= 'clip', choices=['clip', 'modified_clip'])
-    parser.add_argument('--layer_type_for_modified_clip', type=str, default= 'linear', choices=['mlp', 'linear'])
+    parser.add_argument('--text_layer_type_for_modified_clip', type=str, default= 'linear', choices=['mlp', 'linear', 'none'])
+    parser.add_argument('--image_layer_type_for_modified_clip', type=str, default= 'linear', choices=['mlp', 'linear', 'none'])
     parser.add_argument('--probe', type=bool, default=False)
 
     config = parser.parse_args()
     return config
 
 
-def train_clip_align_simultaneously(run_dir, mode, learning_rate, include_classtext_in_image_training = False, epochs = 10, background_consider=False, network_type='clip', layer_type_for_modified_clip='linear', probe=False):
+def train_clip_align_simultaneously(run_dir, mode, learning_rate, epochs = 10, background_consider=False, network_type='clip', text_layer_type_for_modified_clip='linear', image_layer_type_for_modified_clip='linear', probe=False):
     config = configuration_params()
     config.llava_out_dir = run_dir
     config.results_dir = run_dir
     config.mode = mode
     config.learning_rate = learning_rate
-    config.include_classtext_in_image_training = include_classtext_in_image_training
     config.epochs = epochs
     config.test_epochs = (epochs * 1.0) / 10.0
     config.background_consider = background_consider
     config.network_type = network_type
-    config.layer_type_for_modified_clip = layer_type_for_modified_clip
+    config.text_layer_type_for_modified_clip = text_layer_type_for_modified_clip
+    config.image_layer_type_for_modified_clip = image_layer_type_for_modified_clip
     config.probe = probe
     scratch_dir = os.getenv("SCRATCH")
     img_dir = scratch_dir + '/datasets'
