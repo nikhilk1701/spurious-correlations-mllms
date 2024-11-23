@@ -403,9 +403,9 @@ class Align_CLIP(nn.Module):
         print(f"Overall Accuracy: {accuracy}")
         logging.info(f"Overall Accuracy: {accuracy}")
 
-        for class_name, accuracy in class_accuracy.items():
-            print(f"{class_name} Accuracy: {accuracy}")
-            logging.info(f"{class_name} Accuracy: {accuracy}")
+        for class_name, class_acc in class_accuracy.items():
+            print(f"{class_name} Accuracy: {class_acc}")
+            logging.info(f"{class_name} Accuracy: {class_acc}")
         
         for c_name, c_acc in subclass_accuracy.items():
             for subc_name, subc_acc in c_acc.items():
