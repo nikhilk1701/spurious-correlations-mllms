@@ -12,6 +12,7 @@ import torch
 import clip
 import pandas as pd
 import numpy as np
+from networks import *
 
 def eval_mode(model):
     for param in model.parameters():
@@ -19,12 +20,18 @@ def eval_mode(model):
     model.eval()
     return model
 
-def load_model(model_type, text_classes):
-    device = "cuda" if torch.cuda.is_available() else "cpu"
+def load_clip_model(model_type, text_classes, device):
     model, preprocess = clip.load(model_type, device=device)
     model = eval_mode(model)
     text_inputs = torch.cat([clip.tokenize(f"a photo of a {c}") for c in text_classes]).to(device)
     return model, preprocess, text_inputs, device
+
+def load_pretrained_model(clip_model, load_path, device):
+    # copy paste from the corresponding train file to load the model
+    model_dict = torch.load(load_path)
+    clip_model.load_state_dict(model_dict['model']['state_dict'])
+    model = clip_model.to(device)
+    return model
 
 def clip_inference(loaded_model, text_inputs, test_loader, device, binary=False):
     with torch.no_grad():
@@ -111,15 +118,24 @@ def calculate_4class_pred_accuracy(dataset, scores, class_order):
                 accuracy[gt_class][place] = (correct_counts[gt_class][place] * 1.0) / total_counts[gt_class][gt_place]
     return accuracy
 
-def main():
+def main_eval(mode, network, load_path, layer_type_image, layer_type_text):
     text = ["waterbird", "landbird"]
     dataset = "waterbirds"
     scratch_dir = os.getenv("SCRATCH")
     img_dir = scratch_dir + '/datasets'
     model_type = "ViT-B/32"
     save_path = scratch_dir + '/results'
+    device = "cuda" if torch.cuda.is_available() else "cpu"
 
-    model, preprocess, text_inputs, device = load_model(model_type, text)
+    # Added the functionality to evaluate not just zeroshot clip model but also a finetuned clip model
+    clip_model, preprocess, text_inputs, device = load_clip_model(model_type, text, device= device)
+    if mode == 'pretrained':
+        if network == 'clip':
+            model = clip_model
+        elif network == 'modified_clip':
+            model = CLIPCombinedModified(clip_model, layer_type_image= layer_type_image, layer_type_text= layer_type_text) 
+        model = load_pretrained_model(model, load_path, device)
+
     read_dataset = get_organized_dataset(base_dataset_path=Path(img_dir), dataset_name=dataset, dataset_split='test')
     loaded_dataset = CLIPDataloader(clip_transform= preprocess, learning_data= read_dataset, clip_tokenizer=clip.tokenize)
     loader = torch.utils.data.DataLoader(loaded_dataset, batch_size=32, shuffle=False)
@@ -134,6 +150,14 @@ def main():
         print(f"{class_name} Accuracy: {accuracy}")
 
     return
+
+def main():
+    mode = 'clip'
+    network = 'dummy'
+    load_path = 'dummy'
+    layer_type_image = 'dummy'
+    layer_type_text = 'dummy'
+    main_eval(mode, network, load_path, layer_type_image, layer_type_text)
 
 if __name__ == '__main__':
     print('Program started at ' + datetime.datetime.now().strftime('%d/%m/%Y %I:%M:%S %p'))
