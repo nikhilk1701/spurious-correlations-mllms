@@ -240,7 +240,7 @@ class Align_CLIP_Separately(nn.Module):
             images = sampled_batch['image']
             gt_label_image_text = sampled_batch['label']
             obj_text_description = sampled_batch['object_text'].squeeze()
-            background_text_description = sampled_batch['bground_text']
+            background_text_description = sampled_batch['bground_text'].squeeze()
             gt_label_background = sampled_batch['place']
 
             
@@ -248,8 +248,8 @@ class Align_CLIP_Separately(nn.Module):
             if self.config.background_consider == False:
                 # convert gt_label_img_text_vector to 0 or 1 based on classname waterbird =0, landbird = 1
                 class_to_index = {cls: idx for idx, cls in enumerate(self.text_classes)}
-                gt_og_input_text = torch.tensor([class_to_index[label] for label in self.text_classes], device=self.device).unsqueeze(1) # 2
-                gt_label_batch = torch.tensor([class_to_index[label] for label in gt_label_image_text], device=self.device).unsqueeze(1) # bs
+                gt_og_input_text = torch.tensor([class_to_index[label] for label in self.text_classes], device=self.device) # 2
+                gt_label_batch = torch.tensor([class_to_index[label] for label in gt_label_image_text], device=self.device) # bs
 
                 obj_text_description = obj_text_description.to(self.device) # bs
                 # now concatenate the "waterbird" and "landbird" text vectors to text_description and also create it's corresponding labels
@@ -265,9 +265,9 @@ class Align_CLIP_Separately(nn.Module):
             else:
                 # also consider the background text as 2 diferent classes according to water and land
                 class_to_index = {cls: idx for idx, cls in enumerate(self.text_classes + self.bg_classes)} # so 4 classes now
-                gt_og_input_text = torch.tensor([class_to_index[label] for label in self.text_classes], device=self.device).unsqueeze(1) # 2
-                gt_label_batch_text_desc = torch.tensor([class_to_index[label] for label in gt_label_image_text], device=self.device).unsqueeze(1) # bs
-                gt_label_batch_background = torch.tensor([class_to_index[label] for label in gt_label_background], device=self.device).unsqueeze(1) # bs
+                gt_og_input_text = torch.tensor([class_to_index[label] for label in self.text_classes], device=self.device) # 2
+                gt_label_batch_text_desc = torch.tensor([class_to_index[label] for label in gt_label_image_text], device=self.device) # bs
+                gt_label_batch_background = torch.tensor([class_to_index[label] for label in gt_label_background], device=self.device) # bs
 
                 obj_text_description = obj_text_description.to(self.device) # bs
                 background_text_description = background_text_description.to(self.device) # bs
@@ -339,7 +339,7 @@ class Align_CLIP_Separately(nn.Module):
             images = sampled_batch['image']
             gt_label_image_text = sampled_batch['label']
             obj_text_description = sampled_batch['object_text'].squeeze()
-            background_text_description = sampled_batch['bground_text'] # we don't consider this in case of image training
+            background_text_description = sampled_batch['bground_text'].squeeze() # we don't consider this in case of image training
             gt_label_background = sampled_batch['place'] # we don't consider this in case of image training
 
             # convert gt_label_img_text_vector to 0 or 1 based on classname waterbird =0, landbird = 1
@@ -361,7 +361,7 @@ class Align_CLIP_Separately(nn.Module):
                 texts = torch.cat((self.tokenized_text_inputs, obj_text_description), dim=0).to(self.device) # bs+2
                 gt_label_text = torch.cat((gt_og_input_text, gt_label_batch), dim=0).to(self.device) # bs+2
                 gt_label_text = gt_label_text.unsqueeze(0) # 1 * (bs+2)
-                gt_label_text = gt_label_text.repeat(images.shape[0], 1, 1) # b * (bs + 2)
+                gt_label_text = gt_label_text.repeat(images.shape[0], 1) # b * (bs + 2)
 
                 # As we need a 1024 representation layer again, throw_it= True
                 logits_text = self.helper_encode_text(texts, throw_it= True) # bs+2 * 1024

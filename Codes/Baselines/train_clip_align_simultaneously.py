@@ -220,7 +220,7 @@ class Align_CLIP(nn.Module):
             images = sampled_batch['image']
             gt_label_image_text = sampled_batch['label']
             obj_text_description = sampled_batch['object_text'].squeeze()
-            background_text_description = sampled_batch['bground_text']
+            background_text_description = sampled_batch['bground_text'].squeeze()
             obj_bg_concat_txt = sampled_batch['obj_bg_concat_txt']
             gt_label_background = sampled_batch['place']
 
@@ -275,7 +275,7 @@ class Align_CLIP(nn.Module):
                 logits_image = logits_image.unsqueeze(1) # bs * 1 * 1024
 
                 gt_og_input_text, gt_label_batch = self.helper_background_consider(gt_label_image_text, gt_label_background, bg_consider=False)
-                gt_label_image = gt_label_batch.unsqueeze(1) # bs * 1 already unsqueezed previously
+                gt_label_image = gt_label_batch.unsqueeze(1) # bs * 1
                 # Here in this case we include the text classes "waterbird" and "landbird" in the image training
                 obj_text_description = obj_text_description.to(self.device) # bs
 
@@ -330,7 +330,7 @@ class Align_CLIP(nn.Module):
                 new_classes = [ obj_class + bg_class for obj_class in self.text_classes for bg_class in self.bg_classes ]
                 class_to_index = {cls: idx for idx, cls in enumerate(new_classes)} # gives 4 classes
                 class_names_of_sample = np.char.add(gt_label_image_text, gt_label_background) # bs # this does elementwise string addition so if it's waterbird and water then waterbirdwater
-                gt_label_batch = torch.tensor([class_to_index[label] for label in class_names_of_sample], device=self.device).unsqueeze(1) # bs
+                gt_label_batch = torch.tensor([class_to_index[label] for label in class_names_of_sample], device=self.device) # bs
 
                 #########################################################
                 # REST OF THIS HAS TO BE FILLED IN
