@@ -233,6 +233,7 @@ class Train_CLIP_Binary(nn.Module):
         self.test_dict['csv']['GT'] = gt_labels
 
         accuracy, class_accuracy = calculate_class_pred_accuracy(self.text_classes, gt_labels, scores, binary = True)
+        subclass_accuracy = calculate_4class_pred_accuracy(self.test_data, scores, self.text_classes)
 
         self.test_dict['csv'][f'pred{self.current_iteration:04}'].append(accuracy)
         self.test_dict['csv']['Image_Name'].append('Accuracy')
@@ -249,6 +250,11 @@ class Train_CLIP_Binary(nn.Module):
         for class_name, class_acc in class_accuracy.items():
             print(f"{class_name} Accuracy: {class_acc}")
             logging.info(f"{class_name} Accuracy: {class_acc}")
+        
+        for c_name, c_acc in subclass_accuracy.items():
+            for subc_name, subc_acc in c_acc.items():
+                print(f"{c_name} on {subc_name} background accuracy: {subc_acc}")
+                logging.info(f"{c_name} on {subc_name} background accuracy: {subc_acc}")
 
         # Saving test performance to disk
         if not os.path.exists((Path(self.config.results_dir) / 'Test').as_posix()):
