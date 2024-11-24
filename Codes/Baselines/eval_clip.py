@@ -135,6 +135,8 @@ def main_eval(mode, network, load_path, layer_type_image, layer_type_text):
         elif network == 'modified_clip':
             model = CLIPCombinedModified(clip_model, layer_type_image= layer_type_image, layer_type_text= layer_type_text) 
         model = load_pretrained_model(model, load_path, device)
+    else:
+        model = clip_model
 
     read_dataset = get_organized_dataset(base_dataset_path=Path(img_dir), dataset_name=dataset, dataset_split='test')
     loaded_dataset = CLIPDataloader(clip_transform= preprocess, learning_data= read_dataset, clip_tokenizer=clip.tokenize)
