@@ -89,7 +89,7 @@ def calculate_class_pred_accuracy(text_class_order, gt_labels, scores, binary=Fa
 
     return accuracy, class_accuracy
 
-def calculate_4class_pred_accuracy(dataset, scores, class_order):
+def calculate_4class_pred_accuracy(dataset, scores, class_order, binary=False):
     total_counts = {
         "waterbird": { "land": 0, "water": 0, },
         "landbird": { "land": 0, "water": 0, },
@@ -99,7 +99,10 @@ def calculate_4class_pred_accuracy(dataset, scores, class_order):
         "landbird": { "land": 0, "water": 0, },
     }
     for datapoint, score in zip(dataset, scores):
-        guess = class_order[0] if score[0] > score[1] else class_order[1]
+        if binary:
+            guess = class_order[int(score)]
+        else:
+            guess = class_order[0] if score[0] > score[1] else class_order[1]
 
         gt_label = datapoint['label']
         gt_place = datapoint['place']
@@ -118,7 +121,7 @@ def calculate_4class_pred_accuracy(dataset, scores, class_order):
                 accuracy[gt_class][place] = (correct_counts[gt_class][place] * 1.0) / total_counts[gt_class][gt_place]
     return accuracy
 
-def main_eval(mode, network, load_path, layer_type_image, layer_type_text):
+def main_eval(mode, network, load_path, layer_type_image, layer_type_text, binary_mode):
     text = ["waterbird", "landbird"]
     dataset = "waterbirds"
     scratch_dir = os.getenv("SCRATCH")
@@ -142,10 +145,10 @@ def main_eval(mode, network, load_path, layer_type_image, layer_type_text):
     loaded_dataset = CLIPDataloader(clip_transform= preprocess, learning_data= read_dataset, clip_tokenizer=clip.tokenize)
     loader = torch.utils.data.DataLoader(loaded_dataset, batch_size=32, shuffle=False)
     
-    img_name, gt_labels, scores = clip_inference(model, text_inputs, loader, device)
+    img_name, gt_labels, scores = clip_inference(model, text_inputs, loader, device, binary_mode)
     save_to_csv(model_type.split("/")[0], dataset, save_path, img_name, gt_labels, scores)
-    accuracy, class_accuracy = calculate_class_pred_accuracy(text, gt_labels, scores)
-    subclass_accuracy = calculate_4class_pred_accuracy(read_dataset, scores, text)
+    accuracy, class_accuracy = calculate_class_pred_accuracy(text, gt_labels, scores, binary_mode)
+    subclass_accuracy = calculate_4class_pred_accuracy(read_dataset, scores, text, binary_mode)
 
     print(f"Overall Accuracy: {accuracy}")
     for class_name, accuracy in class_accuracy.items():
@@ -163,7 +166,8 @@ def main():
     load_path = 'dummy'
     layer_type_image = 'dummy'
     layer_type_text = 'dummy'
-    main_eval(mode, network, load_path, layer_type_image, layer_type_text)
+    binary_mode = False
+    main_eval(mode, network, load_path, layer_type_image, layer_type_text, binary_mode)
 
 if __name__ == '__main__':
     print('Program started at ' + datetime.datetime.now().strftime('%d/%m/%Y %I:%M:%S %p'))

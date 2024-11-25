@@ -233,7 +233,7 @@ class Train_CLIP_Binary(nn.Module):
         self.test_dict['csv']['GT'] = gt_labels
 
         accuracy, class_accuracy = calculate_class_pred_accuracy(self.text_classes, gt_labels, scores, binary = True)
-        subclass_accuracy = calculate_4class_pred_accuracy(self.test_data, scores, self.text_classes)
+        subclass_accuracy = calculate_4class_pred_accuracy(self.test_data, scores, self.text_classes, binary = True)
 
         self.test_dict['csv'][f'pred{self.current_iteration:04}'].append(accuracy)
         self.test_dict['csv']['Image_Name'].append('Accuracy')
