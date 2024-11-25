@@ -135,6 +135,8 @@ def main_eval(mode, network, load_path, layer_type_image, layer_type_text):
         elif network == 'modified_clip':
             model = CLIPCombinedModified(clip_model, layer_type_image= layer_type_image, layer_type_text= layer_type_text) 
         model = load_pretrained_model(model, load_path, device)
+    else:
+        model = clip_model
 
     read_dataset = get_organized_dataset(base_dataset_path=Path(img_dir), dataset_name=dataset, dataset_split='test')
     loaded_dataset = CLIPDataloader(clip_transform= preprocess, learning_data= read_dataset, clip_tokenizer=clip.tokenize)
@@ -143,11 +145,15 @@ def main_eval(mode, network, load_path, layer_type_image, layer_type_text):
     img_name, gt_labels, scores = clip_inference(model, text_inputs, loader, device)
     save_to_csv(model_type.split("/")[0], dataset, save_path, img_name, gt_labels, scores)
     accuracy, class_accuracy = calculate_class_pred_accuracy(text, gt_labels, scores)
-    calculate_4class_pred_accuracy(read_dataset, scores, text)
+    subclass_accuracy = calculate_4class_pred_accuracy(read_dataset, scores, text)
 
     print(f"Overall Accuracy: {accuracy}")
     for class_name, accuracy in class_accuracy.items():
         print(f"{class_name} Accuracy: {accuracy}")
+
+    for c_name, c_acc in subclass_accuracy.items():
+        for subc_name, subc_acc in c_acc.items():
+            print(f"{c_name} on {subc_name} background accuracy: {subc_acc}")
 
     return
 
