@@ -149,21 +149,30 @@ def plot(probs, attention_vis, text_list, image_vis, save_path=None):
         plt.show()
     return
 
-prompts = ['image of a waterbird', 'image of a landbird']
+prompts = ['a photo of a waterbird.', 'a photo of a landbird.']
 scratch_dir = os.getenv("SCRATCH")
-image_path = f'{scratch_dir}/datasets/Waterbirds/011.Rusty_Blackbird/Rusty_Blackbird_0120_6762.jpg'
+file_name = f"{scratch_dir}/nikhil_models/gradcam_inputs/waterbird_landbg_guess_landbird.txt"
 
 model, preprocess = clip.load('ViT-B/32', device='cpu', jit=False)
 tokenized_text = clip.tokenize(list(prompts)).to('cpu')
 transform = preprocess
 
-attention = transformer_attention(
-                model, transform, image_path,
-                text_list=list(prompts),
-                tokenized_text=tokenized_text,
-                device='cpu',
-                plot_vis=True,
-                save_vis_path='./',
-                resize=False
-            )
+with open(filename) as file:
+    img_paths = [line.rstrip() for line in file]
+
+for img_path in img_paths:
+    save_dir = f'{scratch_dir}/gradcam_results/'
+    if not os.path.exists(save_dir):
+        os.mkdir(save_dir) 
+    save_path = save_dir + img_path.split('/')[-1].split('.')[0]
+
+    attention = transformer_attention(
+                    model, transform, img_path,
+                    text_list=list(prompts),
+                    tokenized_text=tokenized_text,
+                    device='cuda',
+                    plot_vis=True,
+                    save_vis_path= save_path,
+                    resize=False
+                )
 
